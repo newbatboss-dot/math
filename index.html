@@ -176,7 +176,9 @@
             { name: '白银', icon: '🥈', minExp: 600, color: 'bg-slate-100 text-slate-500' },
             { name: '黄金', icon: '🥇', minExp: 1200, color: 'bg-yellow-100 text-yellow-600' },
             { name: '钻石', icon: '💎', minExp: 2000, color: 'bg-purple-100 text-purple-600' },
-            { name: '大师', icon: '👑', minExp: 3500, color: 'bg-red-100 text-red-600' }
+            { name: '大师', icon: '👑', minExp: 3500, color: 'bg-red-100 text-red-600' },
+            { name: '宗师', icon: '🌟', minExp: 6000, color: 'bg-indigo-100 text-indigo-600' },
+            { name: '王者', icon: '🐲', minExp: 10000, color: 'bg-red-200 text-red-800' }
         ];
 
         const SHOP_ITEMS = [
@@ -190,11 +192,8 @@
         ];
         
        // --- 新增：宠物数据库 (100只宝可梦) ---
-        const PET_DB = Array.from({length: 100}, (_, i) => {
-            // 生成 ID 1 到 151 之间的宝可梦 (排除一些初始并没有的)
-            const id = i + 1; 
-            return { id: id, name: `No.${id}` };
-        });
+      // 扩充至 200 只宠物
+        const PET_DB = Array.from({length: 200}, (_, i) => ({ id: i + 1, name: `No.${i + 1} 精灵` }));
 
         // --- 1. 题库配置 (STATIC_DB) ---
         const STATIC_DB = {
@@ -1725,8 +1724,8 @@
             </div>
         );
 
-      // --- 更新后的 Dashboard ---
-        const Dashboard = ({ user, onStart, onShop, onWrong, onMsg, onLogout, onUpdateUser, onOpenPK, onOpenChallenge }) => {
+      // --- 修复后的 Dashboard (包含PK、挑战、领养、背包等所有入口) ---
+        const Dashboard = ({ user, onStart, onShop, onWrong, onMsg, onLogout, onUpdateUser, onOpenPK, onOpenChallenge, onOpenPet, onOpenBag }) => {
             const [showMap, setShowMap] = useState(null);
             const [showRankInfo, setShowRankInfo] = useState(false); 
             const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -1745,7 +1744,7 @@
 
             return (
                 <div className="min-h-screen p-4 pb-24">
-                    {/* 顶部信息栏保持不变 */}
+                    {/* 顶部信息栏 */}
                     <div className="glass-card !p-3 !rounded-2xl mb-6 flex justify-between items-center relative overflow-hidden">
                         <div className="flex items-center gap-3 z-10">
                             <div className="w-14 h-14 bg-white rounded-full border-4 border-blue-100 flex items-center justify-center overflow-hidden cursor-pointer" onClick={()=>setShowLeaderboard(true)}>
@@ -1762,17 +1761,19 @@
                         </div>
                         <div className="flex gap-2 z-10">
                             <button onClick={onLogout} className="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center text-sm font-bold shadow-sm active:scale-95 border border-red-100">退出</button>
-                            <button onClick={onMsg} className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-xl shadow-sm active:scale-95">💌</button>
-                            <button onClick={onWrong} className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-xl shadow-sm active:scale-95 relative">
-                                📕 {user.wrong.length>0 && <span className="wrong-tag">{user.wrong.length}</span>}
+                            
+                            {/* 领养中心按钮 */}
+                            <button onClick={onOpenPet} className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl shadow-sm active:scale-95 relative border-b-4 border-green-200 active:border-b-0 active:translate-y-1 transition-all">
+                                🐾 {user.tokens > 0 && <span className="wrong-tag">{user.tokens}</span>}
                             </button>
-                            <button onClick={onShop} className="h-10 px-3 bg-yellow-100 rounded-xl flex items-center gap-1 font-black text-yellow-700 shadow-sm active:scale-95">
-                                🪙 {user.coins}
-                            </button>
+
+                            <button onClick={onOpenBag} className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl shadow-sm active:scale-95 border border-blue-200">🎒</button>
+                            <button onClick={onWrong} className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-xl shadow-sm active:scale-95 relative">📕 {user.wrong && user.wrong.length>0 && <span className="wrong-tag">{user.wrong.length}</span>}</button>
+                            <button onClick={onShop} className="h-10 px-3 bg-yellow-100 rounded-xl flex items-center gap-1 font-black text-yellow-700 shadow-sm active:scale-95">🪙 {user.coins}</button>
                         </div>
                     </div>
 
-                    {/* 🆕 新增：功能入口区域 */}
+                    {/* 🆕 功能入口区域 */}
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <div onClick={onOpenPK} className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-blue-200 cursor-pointer transform hover:scale-[1.02] transition active:scale-95 relative overflow-hidden group">
                             <div className="absolute right-0 bottom-0 opacity-20 text-6xl transform translate-x-2 translate-y-2 group-hover:rotate-12 transition">⚔️</div>
@@ -1786,7 +1787,7 @@
                         </div>
                     </div>
 
-                    {/* 原有的 BOSS 入口 */}
+                    {/* BOSS 入口 */}
                     <div className="mb-6">
                         <div onClick={()=>canPlayBoss && onStart('BOSS', 'APP')} className={`glass-card relative h-28 overflow-hidden cursor-pointer group boss-glow transition-all ${!canPlayBoss?'opacity-60 grayscale':''}`}>
                             <div className="absolute right-0 top-[-20px] w-40 h-40 opacity-30 group-hover:opacity-100 transition-opacity duration-500">
@@ -1799,7 +1800,7 @@
                         </div>
                     </div>
 
-                    {/* 原有的单元列表 (保持不变) */}
+                    {/* 单元列表 */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {Object.keys(ENEMIES).filter(k=>k!=='BOSS').map((mid, idx) => (
                             <div key={mid} className="glass-card relative h-48 group overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform">
@@ -2057,8 +2058,8 @@
             </div>
         );
 
-        // --- 主程序 ---
-     const App = () => {
+      // --- 修复后的 App 组件 (连接所有功能) ---
+        const App = () => {
             const [view, setView] = useState('LOGIN');
             const [user, setUser] = useState(null);
             const [battleCfg, setBattleCfg] = useState(null);
@@ -2068,8 +2069,10 @@
             const [showMail, setShowMail] = useState(false);
             const [showWrong, setShowWrong] = useState(false);
             const [showShop, setShowShop] = useState(false);
+            const [showBag, setShowBag] = useState(false);
+            const [showPet, setShowPet] = useState(false);
             
-            // 🆕 新增状态
+            // 新模式状态
             const [showPK, setShowPK] = useState(false);
             const [showChallenge, setShowChallenge] = useState(false);
             
@@ -2078,13 +2081,20 @@
             const [showMapModal, setShowMapModal] = useState(null);
 
             useEffect(() => {
-                const saved = JSON.parse(localStorage.getItem('v21_user'));
-                if(saved) { 
-                    if(saved.stamina === undefined) saved.stamina = 100;
-                    setUser(saved); 
-                    setView('DASH'); 
-                }
-                setMsgs(JSON.parse(localStorage.getItem('v21_msgs')||'[]'));
+                try {
+                    const saved = JSON.parse(localStorage.getItem('v21_user'));
+                    if(saved) { 
+                        // 强制补全缺失字段
+                        if(saved.stamina === undefined) saved.stamina = 100;
+                        if(!saved.pets) saved.pets = [saved.pid];
+                        if(saved.tokens === undefined) saved.tokens = 0;
+                        if(!saved.wrong) saved.wrong = [];
+                        if(!saved.inventory) saved.inventory = [];
+                        setUser(saved); 
+                        setView('DASH'); 
+                    }
+                    setMsgs(JSON.parse(localStorage.getItem('v21_msgs')||'[]'));
+                } catch(e) {}
 
                 const staminaTimer = setInterval(() => {
                     setUser(prevUser => {
@@ -2094,36 +2104,41 @@
                         return updated;
                     });
                 }, 60000); 
-
                 return () => clearInterval(staminaTimer);
             }, []);
 
-            const saveUser = (u) => {
-                setUser(u);
-                localStorage.setItem('v21_user', JSON.stringify(u));
+            const saveUser = (u) => { setUser(u); localStorage.setItem('v21_user', JSON.stringify(u)); };
+
+            // 错题记录
+            const handleRecordWrong = (q) => {
+                setUser(prev => {
+                    const currentWrong = prev.wrong || [];
+                    const exists = currentWrong.find(w => w.t === q.t);
+                    if(!exists) {
+                         const newWrongList = [{ t: q.t, a: q.a, e: q.e || "暂无解析" }, ...currentWrong];
+                         const newUser = { ...prev, wrong: newWrongList };
+                         localStorage.setItem('v21_user', JSON.stringify(newUser));
+                         return newUser;
+                    }
+                    return prev;
+                });
             };
 
             const handleLogin = (name, pid) => {
-                saveUser({ name, pid, coins:0, exp:0, wrong:[], inventory:[], stamina: 100 });
+                saveUser({ name, pid, coins:0, exp:0, wrong:[], inventory:[], stamina: 100, pets: [pid], tokens: 0 });
                 setView('DASH');
             };
 
-            const getRank = (exp) => {
-                for(let i=RANKS.length-1; i>=0; i--) if(exp >= RANKS[i].minExp) return RANKS[i];
-                return RANKS[0];
-            };
-
             const handleStartBattle = (mid, mode) => {
-                if (user.stamina < 5) {
-                    alert("体力不足！休息一下或去商店买牛奶吧！");
-                    return;
-                }
+                if (user.stamina < 5) { alert("体力不足！去背包喝牛奶吧！"); return; }
                 setBattleCfg({mid, mode});
             };
 
+            // 战斗结果处理
             const handleResult = (win, q) => {
                 let newUser = { ...user };
-                
+                if (!newUser.wrong) newUser.wrong = [];
+
                 if(win) {
                     const addExp = battleCfg.mid==='BOSS' ? 50 : 10;
                     const oldRank = getRank(user.exp);
@@ -2131,34 +2146,35 @@
                     const curRank = getRank(newExp);
                     
                     if (curRank.minExp > oldRank.minExp) {
-                        setTimeout(() => setNewRank(curRank), 500); 
+                        setTimeout(() => setNewRank(curRank), 500);
+                        newUser.tokens = (newUser.tokens || 0) + 1; // 升级送券
                     }
                     newUser.coins += (battleCfg.mid==='BOSS' ? 50 : 10);
                     newUser.exp = newExp;
                 } else {
-                    const exists = user.wrong.find(w => w.t === q.t);
-                    if(!exists) newUser.wrong = [q, ...user.wrong];
-                    newUser.stamina = Math.max(0, newUser.stamina - 5); 
+                    handleRecordWrong(q); // 记录错题
+                    newUser.stamina = Math.max(0, newUser.stamina - 5);
                 }
                 saveUser(newUser);
             };
 
-            // PK 结算逻辑
+            // PK 获胜
             const handlePKWin = (isWin, diff) => {
                 if (isWin) {
                     const reward = diff === 'HARD' ? 100 : 50;
                     const newUser = { ...user, coins: user.coins + reward, exp: user.exp + reward };
                     saveUser(newUser);
+                    alert(`PK胜利！获得 ${reward} 金币和经验！`);
                 }
                 setShowPK(false);
             };
 
-            // 挑战模式结算逻辑
+            // 挑战模式完成
             const handleChallengeFinish = (score) => {
                 if (score >= 80) {
-                    const newUser = { ...user, coins: user.coins + 100, exp: user.exp + 200 };
+                    const newUser = { ...user, coins: user.coins + 100, exp: user.exp + 200, tokens: (user.tokens||0) + 1 };
                     saveUser(newUser);
-                    // 可以在这里加升级判断
+                    alert("挑战成功！奖励：100金币，200经验，1张领养券！");
                 }
                 setShowChallenge(false);
             };
@@ -2176,21 +2192,40 @@
                 saveUser(newUser);
             };
 
+            const handleUseItem = (item) => {
+                let newUser = { ...user };
+                const idx = newUser.inventory.indexOf(item.id);
+                if(idx > -1) {
+                    newUser.inventory.splice(idx, 1);
+                    if(item.id === 'item7') {
+                         newUser.stamina = Math.min(100, newUser.stamina + 20);
+                         alert("使用了牛奶，体力+20！");
+                    } else {
+                         alert(`你使用了【${item.name}】，${item.desc}，真好玩！`);
+                    }
+                    saveUser(newUser);
+                }
+            };
+
+            const handleSwitchPet = (id) => { saveUser({ ...user, pid: id }); alert("切换成功！"); };
+            const handleAdopt = (id) => {
+                if(user.tokens > 0) {
+                    saveUser({ ...user, pets: [...(user.pets||[]), id], tokens: user.tokens - 1 });
+                    alert("🎉 成功领养！");
+                }
+            };
+
             const sendMsg = (txt) => {
                 const newMsgs = [...msgs, { text: txt, isMe: true, time: new Date().toLocaleTimeString() }];
                 setMsgs(newMsgs);
                 localStorage.setItem('v21_msgs', JSON.stringify(newMsgs));
             };
 
+            const getRank = (exp) => { for(let i=RANKS.length-1; i>=0; i--) if(exp >= RANKS[i].minExp) return RANKS[i]; return RANKS[0]; };
+
             return (
                 <div className="w-full h-full max-w-md mx-auto md:max-w-full bg-slate-50 min-h-screen">
-                    {view === 'LOGIN' && 
-                        <LoginScreen 
-                            onLogin={handleLogin} 
-                            onMsg={()=>setShowMail(true)} 
-                            onTeacher={()=>setView('TEACHER')}
-                        />
-                    }
+                    {view === 'LOGIN' && <LoginScreen onLogin={handleLogin} onMsg={()=>setShowMail(true)} onTeacher={()=>setView('TEACHER')} />}
                     
                     {view === 'DASH' && user && (
                         <Dashboard 
@@ -2199,7 +2234,9 @@
                             onMsg={()=>setShowMail(true)}
                             onWrong={()=>setShowWrong(true)}
                             onShop={()=>setShowShop(true)}
-                            // 🆕 传递打开新模式的函数
+                            
+                            onOpenBag={()=>setShowBag(true)} 
+                            onOpenPet={()=>setShowPet(true)} 
                             onOpenPK={()=>setShowPK(true)}
                             onOpenChallenge={()=>setShowChallenge(true)}
                             
@@ -2211,26 +2248,19 @@
 
                     {view === 'TEACHER' && <TeacherPanel onClose={()=>setView('LOGIN')} />}
 
-                    {/* 战斗模块 */}
-                    {battleCfg && (
-                        <Battle 
-                            {...battleCfg} 
-                            user={user} 
-                            onClose={()=>setBattleCfg(null)} 
-                            onRes={handleResult}
-                            onShowMap={(mid) => { setBattleCfg(null); setShowMapModal(mid); }} 
-                        />
-                    )}
+                    {battleCfg && <Battle {...battleCfg} user={user} onClose={()=>setBattleCfg(null)} onRes={handleResult} onShowMap={(mid) => { setBattleCfg(null); setShowMapModal(mid); }} />}
 
-                    {/* 🆕 挂载新模式 */}
+                    {/* 挂载新模式 */}
                     {showPK && user && <PKBattle user={user} onClose={()=>setShowPK(false)} onWin={handlePKWin} />}
                     {showChallenge && user && <ChallengePath onClose={()=>setShowChallenge(false)} onFinish={handleChallengeFinish} />}
-
-
+                    
                     {showMapModal && <KnowledgeMap mid={showMapModal} onClose={()=>setShowMapModal(null)} onAddCoin={(amount) => saveUser({...user, coins: user.coins + amount})} />}
                     {showMail && <Mailbox msgs={msgs} onSend={sendMsg} onClose={()=>setShowMail(false)} />}
-                    {showWrong && user && <WrongBook list={user.wrong} onClose={()=>setShowWrong(false)} />}
+                    {showWrong && user && <WrongBook list={user.wrong || []} onClose={()=>setShowWrong(false)} />}
                     {showShop && user && <Shop user={user} onClose={()=>setShowShop(false)} onBuy={handleBuy} />}
+                    {showBag && user && <Backpack user={user} onClose={()=>setShowBag(false)} onUse={handleUseItem} />}
+                    {showPet && user && <PetCenter user={user} onClose={()=>setShowPet(false)} onSwitch={handleSwitchPet} onAdopt={handleAdopt} />}
+                    
                     {showLeaderboard && user && <Leaderboard userExp={user.exp} onClose={()=>setShowLeaderboard(false)} />}
                     {newRank && <LevelUpModal rank={newRank} onClose={()=>setNewRank(null)} />}
                 </div>
