@@ -73,10 +73,11 @@
 
         /* --- 动画类 --- */
         .pokemon-sprite {
-            image-rendering: pixelated; 
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
-            transition: all 0.3s;
-        }
+    /* image-rendering: pixelated;  <-- 删掉这一行，或者像这样注释掉 */
+    filter: drop-shadow(0 8px 8px rgba(0,0,0,0.3)); /* 加深阴影，增加3D浮空感 */
+    transition: all 0.3s;
+    transform: scale(1.1); /* 3D素材通常稍微小一点，放大一点点视觉效果更好 */
+}
 
         .bounce-custom { animation: bounceCustom 2s infinite; }
         @keyframes bounceCustom {
@@ -150,7 +151,7 @@
 
         // --- 0. 资源与配置 (使用更稳定的资源源，或者Base64占位符) ---
         // 为了演示稳定性，这里使用 gitmirror 镜像，如果失败则回退到官方 Art
-        const POKE_URL = "https://raw.gitmirror.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/";
+        const POKE_URL = "https://raw.gitmirror.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/";
         const POKE_ART_URL = "https://raw.gitmirror.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/";
         
         const STARTERS = [
@@ -166,11 +167,24 @@
             'M5': [132, 448, 447],
             'M6': [81, 82, 462, 100, 101],
             'M7': [137, 233, 474, 374],
-            'M8': [35, 36, 175, 176, 39],
-            'BOSS': [150, 249, 384, 483, 484, 493]
+           'M8': [35, 36, 175, 176, 39],
+           'M9': [633, 634, 635], // <--- 新增这一行 (单首龙、双头龙、三首恶龙)
+           'BOSS': [150, 249, 384, 483, 484, 493]
         };
 
-        const RANKS = [
+const UNIT_NAMES = {
+    'M1': '时、分、秒',
+    'M2': '万以内的加法和减法(一)',
+    'M3': '测量',
+    'M4': '万以内的加法和减法(二)',
+    'M5': '倍的认识',
+    'M6': '多位数乘一位数',
+    'M7': '数字编码',  // <--- 补上这一行
+    'M8': '分数的初步认识',
+    'M9': '数学广角：集合',
+    'BOSS': '期末大挑战'
+};        
+const RANKS = [
             { name: '新手', icon: '🥚', minExp: 0, color: 'bg-gray-100 text-gray-500' },
             { name: '青铜', icon: '🥉', minExp: 200, color: 'bg-orange-100 text-orange-700' },
             { name: '白银', icon: '🥈', minExp: 600, color: 'bg-slate-100 text-slate-500' },
@@ -181,14 +195,21 @@
             { name: '王者', icon: '🐲', minExp: 10000, color: 'bg-red-200 text-red-800' }
         ];
 
+        // --- 2. 商品列表 (含实物与盲盒) ---
         const SHOP_ITEMS = [
-            { id: 'item7', name: '哞哞鲜奶', price: 30, icon: '🥛', desc: '恢复 20 点体力' },
-            { id: 'item1', name: '神秘糖果', price: 100, icon: '🍬', desc: '甜甜的奖励' },
-            { id: 'item2', name: '小猫表情包', price: 500, icon: '🐱', desc: '萌萌哒' },
-            { id: 'item3', name: '捏捏蛋', price: 2000, icon: '🥚', desc: '解压神器' },
-            { id: 'item4', name: '小鼻嘎', price: 1500, icon: '🟢', desc: '恶搞玩具' },
-            { id: 'item5', name: '神秘盲袋', price: 1000, icon: '🎁', desc: '会有惊喜吗' },
-            { id: 'item6', name: '软软毛毛虫', price: 3000, icon: '🐛', desc: '手感超好' },
+            { id: 'item1', name: '哞哞鲜奶', price: 50, icon: '🥛', desc: '恢复 30 点体力 (涨价啦)' },
+            { id: 'item2', name: '经验糖果', price: 100, icon: '🍬', desc: '增加 50 经验' },
+            { id: 'item3', name: '小鼻嘎', price: 1500, icon: '🐻‍❄️', desc: '白色可爱小鼻嘎' },
+            { id: 'item4', name: '捏捏乐', price: 2500, icon: '🦊', desc: '实物奖励' },
+            // 盲盒
+            { id: 'box_normal', name: '普通盲盒', price: 200, icon: '📦', desc: '随机奖励 (低保底)' },
+            { id: 'box_high', name: '高级盲盒', price: 1000, icon: '🎁', desc: '必得好物，概率出实物券' },
+            // 虚拟玩具
+            { id: 'item2', name: '猫猫挂件', price: 800, icon: '🐱', desc: '放在背包里很可爱' },
+            // 实物大奖 (S1赛季目标)
+            { id: 'real1', name: '免做卡(一张)', price: 5000, icon: '🎫', desc: '老师亲笔签名，免一次作业' },
+            { id: 'real2', name: '蛋仔挂件', price: 4000, icon: '🐣', desc: '实物奖励，找老师兑换' },
+            { id: 'real3', name: '神秘大礼包', price: 15000, icon: '🎒', desc: '神秘礼包全班仅3份' },
         ];
         
        // --- 新增：宠物数据库 (100只宝可梦) ---
@@ -757,46 +778,282 @@
         }
     };
 
-    // 安全合并到 STATIC_DB
+    // --- ✅ 修复代码开始：这里是补上的合并逻辑和闭合符号 ---
     if (typeof STATIC_DB !== 'undefined') {
         let count = 0;
         for (let mid in EXPANSION_PACK) {
-            if (STATIC_DB[mid]) {
-                // 确保 BASIC 存在
-                if (!STATIC_DB[mid].BASIC) STATIC_DB[mid].BASIC = [];
-                // 简单去重逻辑：检查题目开头5个字是否重复
-                const existingTitles = new Set([...STATIC_DB[mid].BASIC, ...(STATIC_DB[mid].APP||[])].map(q => q.t.substring(0, 5)));
-                
-                // 合并 BASIC
-                if (EXPANSION_PACK[mid].BASIC) {
-                    EXPANSION_PACK[mid].BASIC.forEach(q => {
-                        if (!existingTitles.has(q.t.substring(0, 5))) {
-                            STATIC_DB[mid].BASIC.push(q);
-                            count++;
-                        }
+            // 确保单元存在，没有就新建
+            if (!STATIC_DB[mid]) STATIC_DB[mid] = { BASIC: [], APP: [] };
+            
+            // 合并基础题
+            if (EXPANSION_PACK[mid].BASIC) {
+                STATIC_DB[mid].BASIC.push(...EXPANSION_PACK[mid].BASIC);
+                count += EXPANSION_PACK[mid].BASIC.length;
+            }
+            // 合并应用题
+            if (EXPANSION_PACK[mid].APP) {
+                STATIC_DB[mid].APP.push(...EXPANSION_PACK[mid].APP);
+                count += EXPANSION_PACK[mid].APP.length;
+            }
+        }
+        console.log(`✅ 扩充题库 v2.0 加载成功！新增 ${count} 道题目。`);
+    }
+})(); 
+// --- ✅ 修复代码结束：一定要有上面那个 })(); ---
+
+/* --- 📂 文档真题导入插件 (包含 M2, M6, M8, M9) --- */
+(function() {
+    console.log("正在导入文档真题...");
+
+    // 从上传的试卷中提取的精选题目
+    const DOC_QUESTIONS = {
+        'M2': { // 第二单元：万以内加减法
+            BASIC: [
+                {t:"45 + 28 = ( )", type:"INPUT", a:"73", e:"进位加法：5+8=13，写3进1"},
+                {t:"93 - 47 = ( )", type:"INPUT", a:"46", e:"退位减法：13-7=6"},
+                {t:"66比32多( )", type:"INPUT", a:"34"},
+                {t:"比58少23的数是( )", type:"INPUT", a:"35"},
+                {t:"( )比45多30", type:"INPUT", a:"75"},
+                {t:"520 - 370 的结果百位上是( )", type:"MC", o:["1","2","8"], a:"1", e:"520-370=150"},
+                {t:"960袋面粉，运走180和250袋，现在比原来少( )袋", type:"INPUT", a:"430", e:"运走的总数就是减少的数：180+250"},
+                {t:"200 + 420 = ( )", type:"INPUT", a:"620"},
+                {t:"800 - 400 = ( )", type:"INPUT", a:"400"},
+                {t:"一个加数是250，另一个是640，和是( )", type:"INPUT", a:"890"}
+            ],
+            APP: [
+                {t:"微波炉原价650，现价570，便宜了( )元", type:"INPUT", a:"80"},
+                {t:"坐飞机553元，动车379元，动车比飞机大约便宜( )元 (估算)", type:"MC", o:["100","170","200"], a:"170", e:"550-380=170"},
+                {t:"原有522千克苹果，卖出一些后剩294千克，卖出了( )千克", type:"INPUT", a:"228", e:"522-294"},
+                {t:"公交车原120人，下60人，上75人，现在有( )人", type:"INPUT", a:"135", e:"120-60+75"},
+                {t:"爸爸买鼠标65元，键盘117元，付200元，应找回( )元", type:"INPUT", a:"18"},
+                {t:"芸芸送给芳芳11张邮票后两人一样多，原来芸芸比芳芳多( )张", type:"INPUT", a:"22", e:"相差2倍的给出的数量"}
+            ]
+        },
+        'M6': { // 第六单元：多位数乘一位数
+            BASIC: [
+                {t:"200 × 8 = ( )", type:"INPUT", a:"1600"},
+                {t:"17 × 3 = ( )", type:"INPUT", a:"51"},
+                {t:"最小的三位数与最大的一位数的积是( )", type:"INPUT", a:"900", e:"100 x 9"},
+                {t:"0和任何数相乘都得( )", type:"INPUT", a:"0"},
+                {t:"225 × 4 的积是( )位数", type:"MC", o:["三","四"], a:"三", e:"225x4=900"},
+                {t:"502 × 4，积的中间有( )个0", type:"INPUT", a:"2", e:"502x4=2008"},
+                {t:"304 × 5 的积末尾有( )个0", type:"INPUT", a:"1", e:"304x5=1520"},
+                {t:"120 × 4 = ( )", type:"INPUT", a:"480"},
+                {t:"49 × 5 大约等于( )", type:"INPUT", a:"250", e:"把49看作50"},
+                {t:"101 + 102 + ... + 107 = 104 × ( )", type:"INPUT", a:"7", e:"平均数x个数"}
+            ],
+            APP: [
+                {t:"每箱42元，买5箱，带200元够吗？(填够或不够)", type:"MC", o:["够","不够"], a:"不够", e:"42x5=210，210>200"},
+                {t:"每辆车坐29人，300人租10辆车够吗？(填够或不够)", type:"MC", o:["够","不够"], a:"不够", e:"29x10=290，290<300"},
+                {t:"725 × 8 = ( )", type:"INPUT", a:"5800"},
+                {t:"王叔叔每天加工8个零件，3天完成。如果每天加工6个，( )天完成", type:"INPUT", a:"4", e:"总数24，24÷6=4"},
+                {t:"400名同学乘车，前4辆每辆82人，第5辆要坐( )人", type:"INPUT", a:"72", e:"400 - (82x4)"}
+            ]
+        },
+        'M8': { // 第八单元：分数的初步认识
+            BASIC: [
+                {t:"把苹果平均分4份，每份是它的( )", type:"MC", o:["1/4","1/2"], a:"1/4"},
+                {t:"5个1/9是( )/9 (只填分子)", type:"INPUT", a:"5"},
+                {t:"1 - 3/7 = ( )/7 (只填分子)", type:"INPUT", a:"4"},
+                {t:"分母相同，分子越大，分数越( )", type:"MC", o:["大","小"], a:"大"},
+                {t:"2天是一个星期的( )/7", type:"INPUT", a:"2"},
+                {t:"15分钟是1小时的( )/4", type:"INPUT", a:"1", e:"15是60的四分之一"},
+                {t:"1可以看成( )个1/6", type:"INPUT", a:"6"},
+                {t:"5/8 - 2/8 = ( )/8", type:"INPUT", a:"3"},
+                {t:"1/2 ( ) 1/4 (填>或<)", type:"MC", o:[">","<"], a:">", e:"分母越大分数越小"}
+            ],
+            APP: [
+                {t:"一堆糖12块，拿出3/4，拿出了( )块", type:"INPUT", a:"9", e:"12÷4×3=9"},
+                {t:"16个桃子，平均分4份，3份有( )个", type:"INPUT", a:"12", e:"16÷4×3=12"},
+                {t:"林林喝了一杯可乐的3/5，杯中还剩( )/5", type:"INPUT", a:"2"},
+                {t:"一段绳子对折3次，每段长是总长的( )", type:"MC", o:["1/3","1/6","1/8"], a:"1/8", e:"2x2x2=8"},
+                {t:"猪八戒吃西瓜1/2，孙悟空吃1/6，谁吃得多？", type:"MC", o:["猪八戒","孙悟空"], a:"猪八戒"}
+            ]
+        },
+        'M9': { // 第九单元：集合 (新增单元)
+            BASIC: [
+                {t:"三(1)班会跳舞18人，会唱歌20人，都会的有8人。会唱歌或跳舞的一共( )人", type:"INPUT", a:"30", e:"18+20-8=30"},
+                {t:"爸爸去外婆家每3天一次，舅舅每5天一次，3月1日都去了，下次都去是3月( )日", type:"INPUT", a:"16", e:"3和5的公倍数是15，1+15=16"},
+                {t:"昨天和今天都得卫星星的有：小红、小明、小刚。昨天5人，今天6人。一共( )人得星", type:"INPUT", a:"8", e:"5+6-3=8"},
+                {t:"排队，从前数妈妈排第8，从后数妈妈也排第8，这队有( )人", type:"INPUT", a:"15", e:"8+8-1=15"},
+                {t:"两根木棍各长100厘米，中间重叠20厘米绑在一起，全长( )厘米", type:"INPUT", a:"180", e:"100+100-20"},
+                {t:"喜欢篮球10人，足球8人，两种都喜欢3人，只喜欢篮球( )人", type:"INPUT", a:"7", e:"10-3=7"}
+            ],
+            APP: [
+                {t:"语文竞赛12人，数学竞赛14人，都参加5人。全班至少参加一项的有( )人", type:"INPUT", a:"21", e:"12+14-5"},
+                {t:"饲养组养鸡32只，养鸭25只，其中有10只鸡和鸭都养了(假设同一笼)。一共有( )个笼子", type:"INPUT", a:"47", e:"集合计算：32+25-10"},
+                {t:"10人跳绳，8人踢毽子，两项都参加最多( )人", type:"INPUT", a:"8", e:"踢毽子的人全部也跳绳"},
+                {t:"10人跳绳，8人踢毽子，两项都参加最少( )人 (假设班级总分15人)", type:"INPUT", a:"3", e:"10+8-15=3"}
+            ]
+        }
+    };
+
+
+    // 安全合并到 STATIC_DB
+    if (typeof STATIC_DB !== 'undefined') {
+        let count = 0;
+        
+        // --- 修复：先强制初始化 M9，防止报错 ---
+        if (!STATIC_DB['M9']) {
+            STATIC_DB['M9'] = { BASIC: [], APP: [] };
+        }
+        // ------------------------------------
+
+        for (let mid in DOC_QUESTIONS) {
+            // 如果是新单元(M9)，或者已有单元
+            if (STATIC_DB[mid] || mid === 'M9') {
+                if (!STATIC_DB[mid]) STATIC_DB[mid] = { BASIC: [], APP: [] };
+
+                // 合并基础题
+                if (DOC_QUESTIONS[mid].BASIC) {
+                    DOC_QUESTIONS[mid].BASIC.forEach(q => {
+                        STATIC_DB[mid].BASIC.push(q);
+                        count++;
                     });
                 }
-
-                // 确保 APP 存在
-                if (!STATIC_DB[mid].APP) STATIC_DB[mid].APP = [];
-                
-                // 合并 APP
-                if (EXPANSION_PACK[mid].APP) {
-                    EXPANSION_PACK[mid].APP.forEach(q => {
-                        if (!existingTitles.has(q.t.substring(0, 5))) {
-                            STATIC_DB[mid].APP.push(q);
-                            count++;
-                        }
+                // 合并应用题
+                if (DOC_QUESTIONS[mid].APP) {
+                    DOC_QUESTIONS[mid].APP.forEach(q => {
+                        STATIC_DB[mid].APP.push(q);
+                        count++;
                     });
                 }
             }
         }
-        console.log(`✅ 扩充包加载完成！成功新增 ${count} 道题目。`);
-    } else {
-        console.error("❌ 未找到 STATIC_DB，请确保将此代码粘贴在 STATIC_DB 定义之后！");
-    }
+        console.log(`✅ 文档真题加载完成！成功新增 ${count} 道题目（含第九单元）。`);
+    }              
 })();
+    
+/* --- 导入结束 --- */
+/* --- 🎵 现代Q弹音效系统 (仿蛋仔派对风格) --- */
+const SoundSystem = {
+    ctx: null,
+    init: function() {
+        if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+    },
+    // 生成Q弹的滑音 (核心技术：频率滑动)
+    playBouncy: function(startFreq, endFreq, duration, type='sine', vol=0.3) {
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = type;
+        
+        // 频率滑行：产生“丢~”或“布鲁~”的果冻效果
+        osc.frequency.setValueAtTime(startFreq, t);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, t + duration);
+        
+        // 音量包络：开头大，结尾瞬间消失
+        gain.gain.setValueAtTime(vol, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + duration);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(t + duration);
+    },
+    // 播放胜利和弦
+    playChord: function(freqs) {
+        freqs.forEach((f, i) => {
+            setTimeout(() => this.playBouncy(f, f, 0.4, 'sine', 0.15), i * 60);
+        });
+    },
+    play: function(name) {
+        this.init();
+        switch(name) {
+            case 'click': // 🔘 普通点击：像水滴一样的“啵”声
+                this.playBouncy(400, 600, 0.1, 'sine', 0.1); 
+                break;
+            case 'open': // 🎒 打开界面：清脆的“咻”
+                this.playBouncy(300, 800, 0.15, 'sine', 0.1);
+                break;
+            case 'attack': // ✅ 答对：清脆的“叮铃” (三连音)
+                this.playBouncy(880, 880, 0.1, 'sine', 0.1);
+                setTimeout(() => this.playBouncy(1100, 1100, 0.1, 'sine', 0.1), 80);
+                setTimeout(() => this.playBouncy(1760, 1760, 0.3, 'sine', 0.2), 160);
+                break;
+            case 'hit': // ❌ 答错：可爱的“呃哦” (下沉滑音)
+                this.playBouncy(300, 100, 0.3, 'triangle', 0.2); 
+                break;
+            case 'win': // 🏆 升级/胜利：大三和弦
+                this.playChord([523.25, 659.25, 783.99, 1046.50]);
+                break;
+        }
+    }
+};
 
+// --- 🎹 背景音乐配置 (中国镜像加速版) ---
+const BGM_ASSETS = {
+    SOURCES: {
+        // 🏠 大厅：真新镇 (Pallet Town) - 温馨回忆，适合平时刷题
+        // 使用 raw.gitmirror.com 加速 GitHub 资源
+        LOBBY: "https://raw.gitmirror.com/Skinner927/pokemon-html5/master/assets/sounds/bgm/pallet.mp3",
+        
+        // ⚔️ 战斗：野生怪战斗 (Battle) - 节奏快，提升专注度
+        BATTLE: "https://raw.gitmirror.com/Skinner927/pokemon-html5/master/assets/sounds/bgm/battle.mp3",
+        
+        // 🔥 BOSS：馆主/胜利 (Victory) - 激昂，适合BOSS战
+        BOSS: "https://raw.gitmirror.com/Skinner927/pokemon-html5/master/assets/sounds/bgm/victory.mp3"
+    }
+};
+// --- 📻 音乐播放器组件 (优化版) ---
+const MusicPlayer = ({ scene, isMuted }) => {
+    const audioRef = useRef(null);
+
+    useEffect(() => {
+        // 初始化音频对象
+        if (!audioRef.current) {
+            audioRef.current = new Audio();
+            audioRef.current.loop = true; // 循环播放
+            audioRef.current.volume = 0.3; // 🔉 音量设为 30%，不干扰答题音效
+        }
+
+        const audio = audioRef.current;
+
+        // 1. 确定要播放的音乐链接
+        let targetSrc = "";
+        if (scene === 'LOBBY') targetSrc = BGM_ASSETS.SOURCES.LOBBY;
+        else if (scene === 'BATTLE') targetSrc = BGM_ASSETS.SOURCES.BATTLE;
+        else if (scene === 'BOSS') targetSrc = BGM_ASSETS.SOURCES.BOSS;
+
+        // 2. 只有当链接改变时才切歌
+        if (targetSrc && audio.src !== targetSrc) {
+            audio.src = targetSrc;
+            audio.load(); // 强制重新加载
+            
+            // 尝试播放 (处理浏览器自动播放限制)
+            if (!isMuted) {
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("⏳ 等待用户交互后播放 BGM...");
+                    });
+                }
+            }
+        }
+    }, [scene]); // 监听场景变化
+
+    // 3. 监听静音开关
+    useEffect(() => {
+        if (audioRef.current) {
+            if (isMuted) {
+                audioRef.current.pause();
+            } else {
+                // 如果取消静音且有歌，就播放
+                if (audioRef.current.src) {
+                    audioRef.current.play().catch(e => console.log("播放失败:", e));
+                }
+            }
+        }
+    }, [isMuted]);
+
+    return null; 
+};// ------------------------------------
         const Generator = {
             rand: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
             
@@ -852,6 +1109,19 @@
                 const total = g.rand(6,12) * 2;
                 return {t:`一堆糖有${total}颗，拿出它的1/2，拿出了几颗？`, a:`${total/2}`, type:'INPUT'};
             },
+
+            M9: (g) => {
+                // 简单的集合生成逻辑
+                const a = g.rand(10, 20); // 喜欢A的人
+                const b = g.rand(10, 20); // 喜欢B的人
+                const both = g.rand(3, 8); // 都喜欢的
+                return {
+                    t: `班级调查：喜欢篮球${a}人，喜欢足球${b}人，两种都喜欢${both}人。喜欢篮球或足球的一共几人？`,
+                    a: `${a + b - both}`,
+                    type: 'INPUT'
+                };
+            },
+
             BOSS: (g) => {
                 const n = g.rand(3,6), t = g.rand(2,5);
                 return {t:`【锯木头】锯一次要${t}分钟，锯成${n}段要几分钟？`, a:`${t*(n-1)}`, type:'INPUT'};
@@ -893,6 +1163,16 @@
             'M6': { title: '多位数乘法', nodes: ['0乘任何数\n得0', '从个位\n乘起', '满几十\n进几', '整十乘法\n先不看0\n再补0', '0+任何数\n=任何数'] },
             'M7': { title: '编码', nodes: ['身份证\n18位', '倒数第2位\n判性别\n(单男双女)', '出生日期\n第7-14位', '邮编\n6位数', '110报警\n120急救'] },
             'M8': { title: '分数', nodes: ['分子分母\n上子下母', '同分母\n加减\n分母不变', '平均分\n才叫分数', '几分之一\n分母越大\n分数越小', '1可以看作\n分子分母\n相同'] },
+'M9': { 
+    title: '集合 (韦恩图)', 
+    nodes: [
+        '重叠问题\n用加减法', 
+        '只参加A\n=总数-都参加', 
+        '总人数\n=A+B-既A又B', 
+        '既A又B\n=A+B-总人数',
+        '排队问题\n算重复\n要减1'
+    ] 
+},
         };
 
         // --- 2. UI 组件 ---
@@ -906,9 +1186,18 @@
                 purple: "bg-gradient-to-b from-purple-400 to-purple-600 text-white border-b-4 border-purple-800 active:border-b-0",
                 gray: "bg-gray-200 text-gray-400 border-gray-300",
             };
+            
+            // 👇 封装点击事件，自动播放“啵”声
+            const handleClick = (e) => {
+                if (!disabled) {
+                    SoundSystem.play('click'); // 播放气泡音
+                    if (onClick) onClick(e);
+                }
+            };
+
             return (
                 <button 
-                    onClick={disabled ? null : onClick} 
+                    onClick={handleClick} 
                     disabled={disabled}
                     className={`game-btn rounded-xl font-black flex items-center justify-center gap-2 transition-all active:translate-y-1 ${disabled ? colors.gray : colors[color]} ${className}`}
                     style={{minHeight: size==='sm'?'40px':'56px'}}
@@ -917,7 +1206,6 @@
                 </button>
             );
         };
-
         const PokeImg = ({ id, animate = true, className = "" }) => (
             <img 
                 src={animate ? `${POKE_URL}${id}.gif` : `${POKE_ART_URL}${id}.png`} 
@@ -1035,6 +1323,7 @@
             const [aiTimer, setAiTimer] = useState(null);
             const [gameTimer, setGameTimer] = useState(30); // 30秒倒计时
             const [status, setStatus] = useState('SELECT'); // SELECT, BATTLE, END
+            const [mistakes, setMistakes] = useState(0); // 记录错误次数
 
             // 游戏主循环
             useEffect(() => {
@@ -1087,15 +1376,28 @@
 
             const checkAns = (ans) => {
                 if (!q) return;
+                
                 if (ans === q.a) {
+                    // ✅ 答对
+                    SoundSystem.play('attack');
                     setMyScore(s => s + 10);
-                    speak("不错哦！");
-                    nextQ(); // 答对换题
+                    // speak("不错哦！"); // 觉得吵可以注释掉
+                    nextQ(); 
                 } else {
-                    speak("错了！");
-                    // 答错不换题，惩罚? 暂时不惩罚，只是不加分
+                    // ❌ 答错
+                    SoundSystem.play('hit');
+                    
+                    // 检查错误次数 (改为允许错 2 次，第 3 次失败)
+                  if (mistakes >= 2) { 
+                        alert("💔 答错 3 次，挑战失败！");
+                        setStatus('END'); // 直接结束游戏
+                    } else {
+                        setMistakes(m => m + 1); // 记一次过
+                        // 剩余机会 = 总机会(3) - 已错次数(mistakes) - 当前这一次(1)
+                        alert(`❌ 答错了！还剩 ${2 - mistakes} 次机会！`);
                 }
-            };
+            }
+        }; // <--- 🔴 请务必补上这一个 }; ，这是 checkAns 函数的结束！
 
             if (status === 'SELECT') {
                 return (
@@ -1146,6 +1448,10 @@
                             </div>
                         </div>
                         <div className="text-4xl font-mono font-black text-yellow-400 animate-pulse">{gameTimer}</div>
+<div className="flex flex-col items-center">
+                            <div className="text-4xl font-mono font-black text-yellow-400 animate-pulse">{gameTimer}</div>
+                            <div className="text-xs text-red-300 font-bold mt-1">❤️ 剩余机会: {3 - mistakes}</div>
+                        </div>
                         <div className="flex items-center gap-3 text-right">
                             <div>
                                 <div className="text-xs opacity-70">{diff==='EASY'?'呆呆兽':'超梦'} (AI)</div>
@@ -1361,6 +1667,7 @@
                 </div>
             );
         };
+    // --- 4. 登录界面 (含赛季公告) ---
         const LoginScreen = ({ onLogin, onMsg, onTeacher }) => {
             const [name, setName] = useState('');
             const [pid, setPid] = useState(25);
@@ -1369,56 +1676,37 @@
             const [pwd, setPwd] = useState('');
 
             const handleTitleClick = () => {
-                const newCount = tapCount + 1;
-                setTapCount(newCount);
-                if (newCount >= 5) {
-                    setShowTeacherLogin(true);
-                    setTapCount(0);
-                }
+                const newCount = tapCount + 1; setTapCount(newCount);
+                if (newCount >= 5) { setShowTeacherLogin(true); setTapCount(0); }
             };
 
-            const handleTeacherLogin = () => {
-                if(pwd === '8888') {
-                    onTeacher();
-                } else {
-                    alert('密码错误');
-                }
-            };
-
-            if (showTeacherLogin) {
-                return (
-                    <div className="min-h-screen flex items-center justify-center p-4">
-                        <div className="glass-card max-w-sm w-full p-8 text-center modal-enter">
-                            <h2 className="text-2xl font-black text-gray-800 mb-4">👩‍🏫 教师登录</h2>
-                            <input 
-                                type="password"
-                                value={pwd}
-                                onChange={e=>setPwd(e.target.value)}
-                                placeholder="请输入教师密码" 
-                                className="w-full p-3 rounded-lg border-2 border-blue-200 mb-4 text-center"
-                            />
-                            <div className="flex gap-2">
-                                <Button onClick={()=>setShowTeacherLogin(false)} color="gray" className="flex-1" size="sm">返回</Button>
-                                <Button onClick={handleTeacherLogin} color="blue" className="flex-1" size="sm">登录</Button>
-                            </div>
-                        </div>
+            if (showTeacherLogin) return (
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    <div className="glass-card max-w-sm w-full p-8 text-center">
+                        <h2 className="text-2xl font-black mb-4">👩‍🏫 教师登录</h2>
+                        <input type="password" value={pwd} onChange={e=>setPwd(e.target.value)} placeholder="密码" className="w-full p-3 border-2 rounded-lg mb-4 text-center"/>
+                        <div className="flex gap-2"><Button onClick={()=>setShowTeacherLogin(false)} color="gray" className="flex-1">返回</Button><Button onClick={()=>{if(pwd==='8888')onTeacher();else alert('错啦')}} color="blue" className="flex-1">登录</Button></div>
                     </div>
-                );
-            }
+                </div>
+            );
 
             return (
                 <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-                    <div className="absolute top-10 left-10 opacity-30 bounce-custom"><PokeImg id={6} className="w-24"/></div>
-                    <div className="absolute bottom-10 right-10 opacity-30 bounce-custom" style={{animationDelay:'1s'}}><PokeImg id={9} className="w-24"/></div>
-                    <button onClick={onMsg} className="absolute top-4 right-4 bg-white/80 p-3 rounded-full shadow-lg text-2xl hover:scale-110 transition-transform">💌</button>
-
                     <div className="glass-card max-w-md w-full p-8 text-center modal-enter z-10 relative">
                         <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 w-32 h-32">
                             <PokeImg id={pid} className="w-full h-full drop-shadow-2xl bounce-custom" />
                         </div>
                         
-                        <h1 onClick={handleTitleClick} className="text-4xl font-black text-blue-600 mt-12 mb-2 tracking-wider cursor-pointer select-none">2305数学宝可梦大冒险</h1>
-                        <p className="text-gray-400 font-bold mb-8">开始你的数学之旅吧！</p>
+                        <h1 onClick={handleTitleClick} className="text-4xl font-black text-blue-600 mt-12 mb-4 tracking-wider cursor-pointer">2305数学宝可梦</h1>
+                        
+                        <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4 mb-6 text-left text-sm text-orange-900 shadow-inner">
+                            <h3 className="font-black text-lg mb-2 text-orange-600 flex items-center">🔥 S1赛季：加减法风暴</h3>
+                            <ul className="list-disc pl-4 space-y-1">
+                                <li>📅 <strong>时间：</strong> 12月限定赛季</li>
+                                <li>🏆 <strong>规则：</strong> 赛季结束段位/金币重置</li>
+                                <li>🎁 <strong>大奖：</strong> 前三名赢取 <span className="font-bold text-red-500">实体大公仔</span></li>
+                            </ul>
+                        </div>
 
                         <div className="flex justify-start gap-3 mb-6 overflow-x-auto py-2 scrollbar-hide px-2">
                             {STARTERS.map(id => (
@@ -1428,409 +1716,229 @@
                             ))}
                         </div>
 
-                        <input 
-                            value={name} 
-                            onChange={e=>setName(e.target.value)} 
-                            placeholder="输入你的名字" 
-                            className="w-full p-4 rounded-xl border-4 border-blue-100 bg-blue-50 text-center font-bold text-xl outline-none focus:border-blue-400 transition-colors mb-4"
-                        />
+                        <input value={name} onChange={e=>setName(e.target.value)} placeholder="请输入你的名字" className="w-full p-4 rounded-xl border-4 border-blue-100 bg-blue-50 text-center font-bold text-xl outline-none focus:border-blue-400 transition-colors mb-4"/>
                         <Button onClick={()=>name && onLogin(name, pid)} color="yellow" className="w-full text-xl">开始冒险 GO!</Button>
                     </div>
                 </div>
             );
         };
 
-        // --- 语音播放 ---
         const speak = (text) => {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
                 const u = new SpeechSynthesisUtterance(text);
-                u.lang = 'zh-CN'; 
-                u.rate = 1.0; 
+                u.lang = 'zh-CN'; u.rate = 1.0; 
                 window.speechSynthesis.speak(u);
             }
         };
 
-        // --- 知识地图：卷轴组件 ---
-        const KnowledgeMap = ({ mid, onClose, onAddCoin }) => {
+        const KnowledgeMap = ({ mid, onClose, onAddCoin, canLoot }) => {
             const data = KNOWLEDGE_MAP[mid];
-            const canvasRef = useRef(null);
-            const containerRef = useRef(null);
-            const [scrollWidth, setScrollWidth] = useState(0); 
             const [isFullyOpen, setIsFullyOpen] = useState(false);
-            const [coinClaimed, setCoinClaimed] = useState(false);
             
-            useEffect(() => {
-                let animationFrameId;
-                let startTime = null;
-                const duration = 1500; 
-
-                const animate = (time) => {
-                    if (!startTime) startTime = time;
-                    const progress = Math.min((time - startTime) / duration, 1);
-                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-                    
-                    setScrollWidth(easeOutQuart * 100); 
-
-                    if (progress < 1) {
-                        animationFrameId = requestAnimationFrame(animate);
-                    } else {
-                        setIsFullyOpen(true);
-                    }
-                };
-                
-                animationFrameId = requestAnimationFrame(animate);
-                return () => cancelAnimationFrame(animationFrameId);
-            }, []);
-
-            useEffect(() => {
-                const canvas = canvasRef.current;
-                const ctx = canvas.getContext('2d');
-                const w = canvas.width;
-                const h = canvas.height;
-                const centerX = w / 2;
-                const currentWidth = (scrollWidth / 100) * (w - 60);
-
-                ctx.clearRect(0, 0, w, h);
-
-                ctx.shadowBlur = 20 * (scrollWidth / 100);
-                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                
-                const paperLeft = centerX - currentWidth / 2;
-                ctx.fillStyle = '#f8fafc'; 
-                ctx.fillRect(paperLeft, 40, currentWidth, h - 80);
-                ctx.shadowBlur = 0; 
-
-                const drawRoller = (x) => {
-                    const grad = ctx.createLinearGradient(x - 15, 0, x + 15, 0);
-                    grad.addColorStop(0, '#854d0e');
-                    grad.addColorStop(0.5, '#facc15'); 
-                    grad.addColorStop(1, '#854d0e');
-                    ctx.fillStyle = grad;
-                    
-                    ctx.beginPath();
-                    ctx.roundRect(x - 10, 20, 20, h - 40, 5);
-                    ctx.fill();
-                    
-                    ctx.fillStyle = '#3f2c22'; 
-                    ctx.beginPath();
-                    ctx.arc(x, 30, 12, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(x, h - 30, 12, 0, Math.PI * 2);
-                    ctx.fill();
-                };
-
-                drawRoller(paperLeft); 
-                drawRoller(centerX + currentWidth / 2);
-
-                if (isFullyOpen && data) {
-                    ctx.globalCompositeOperation = 'lighter';
-                    ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
-                    ctx.lineWidth = 3;
-                    
-                    const cx = w / 2;
-                    const cy = h / 2;
-                    
-                    data.nodes.forEach((_, i) => {
-                        const angle = (i / data.nodes.length) * 2 * Math.PI;
-                        const tx = cx + Math.cos(angle) * 160;
-                        const ty = cy + Math.sin(angle) * 160;
-                        
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy);
-                        ctx.bezierCurveTo(cx, cy, (cx + tx)/2, (cy + ty)/2, tx, ty);
-                        ctx.stroke();
-                    });
-                    ctx.globalCompositeOperation = 'source-over';
-                }
-
-            }, [scrollWidth, isFullyOpen, data]);
-
-            const handlePokeClick = (e) => {
-                e.stopPropagation();
-                if (coinClaimed) {
-                    alert("这个宝箱已经领过啦！");
-                    return;
-                }
-                confetti({
-                    particleCount: 30,
-                    spread: 50,
-                    origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight },
-                    colors: ['#fbbf24', '#f59e0b'] 
-                });
-                alert("你发现了一个隐藏的金币袋！金币+50");
-                onAddCoin(50);
-                setCoinClaimed(true);
-            };
+            useEffect(() => { setTimeout(() => setIsFullyOpen(true), 100); }, []);
 
             if(!data) return null;
-
             return (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-                    <div ref={containerRef} className="relative w-full max-w-4xl h-[80vh] flex items-center justify-center" onClick={e=>e.stopPropagation()}>
-                        
-                        <canvas ref={canvasRef} width={800} height={600} className="absolute z-0 w-full h-full" />
-
-                        {isFullyOpen && (
-                            <button onClick={onClose} className="absolute top-4 right-8 z-50 text-4xl text-gray-400 hover:text-red-500 transition-colors">×</button>
+                <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
+                    <div className="relative bg-amber-100 w-full max-w-4xl h-[80vh] rounded-xl overflow-hidden shadow-2xl flex flex-col items-center justify-center border-y-8 border-amber-800" onClick={e=>e.stopPropagation()}>
+                        <h2 className="text-3xl font-black text-amber-900 mt-8 mb-4 border-b-4 border-amber-900/20 pb-2">{data.title} - 知识地图</h2>
+                        <div className="flex-1 w-full p-8 grid grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto">
+                             {data.nodes.map((node, i) => (
+                                <div key={i} className="bg-white/60 p-4 rounded-lg border-2 border-amber-800/30 text-center flex items-center justify-center font-bold text-amber-900 shadow-sm hover:scale-105 transition-transform">
+                                    {node}
+                                </div>
+                             ))}
+                        </div>
+                        <div className="absolute top-4 right-4"><button onClick={onClose} className="text-4xl text-amber-900 hover:text-red-600">×</button></div>
+                        {canLoot && (
+                            <button onClick={(e)=>{e.stopPropagation(); alert("获得50金币！"); onAddCoin(50); onClose();}} className="absolute bottom-8 right-8 animate-bounce">
+                                <span className="text-6xl">💰</span>
+                            </button>
                         )}
-
-                        <div 
-                            className="absolute z-10 flex items-center justify-center w-full h-full overflow-hidden transition-opacity duration-500"
-                            style={{ 
-                                opacity: isFullyOpen ? 1 : 0,
-                                clipPath: `inset(0 ${50 - scrollWidth/2}% 0 ${50 - scrollWidth/2}%)`
-                            }}
-                        >
-                            <div className="relative w-[800px] h-[600px]">
-                                <div className="absolute top-10 left-1/2 -translate-x-1/2 text-3xl font-black text-blue-800 tracking-widest border-b-4 border-yellow-400 pb-2">
-                                    {data.title}
-                                </div>
-
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                    <div className="w-32 h-32 bg-blue-500 rounded-full flex items-center justify-center text-white font-black text-2xl shadow-xl border-4 border-blue-200 animate-pulse cursor-pointer hover:scale-110 transition-transform">
-                                        核心
-                                    </div>
-                                </div>
-
-                                {data.nodes.map((node, i) => {
-                                    const angle = (i / data.nodes.length) * 2 * Math.PI;
-                                    const x = 400 + Math.cos(angle) * 160; 
-                                    const y = 300 + Math.sin(angle) * 160;
-                                    return (
-                                        <div 
-                                            key={i}
-                                            className="absolute w-32 h-32 bg-white border-4 border-yellow-400 rounded-full flex items-center justify-center text-center p-1 text-xs font-bold text-gray-700 shadow-md cursor-pointer hover:scale-110 transition-transform hover:shadow-yellow-200 hover:shadow-lg whitespace-pre-wrap overflow-hidden"
-                                            style={{
-                                                left: x, top: y,
-                                                transform: `translate(-50%, -50%) scale(${isFullyOpen ? 1 : 0})`,
-                                                transition: `transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 0.1}s`
-                                            }}
-                                        >
-                                            {node}
-                                        </div>
-                                    );
-                                })}
-
-                                <div 
-                                    className={`absolute bottom-10 left-10 w-24 h-24 cursor-pointer hover:scale-125 transition-transform duration-300 animate-bounce ${coinClaimed ? 'opacity-50 grayscale' : ''}`}
-                                    onClick={handlePokeClick}
-                                >
-                                    <PokeImg id={52} className="w-full h-full" /> 
-                                    <div className="w-16 h-4 bg-black/20 rounded-full blur-sm absolute bottom-0 left-4"></div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             );
         };
 
-        const TeacherPanel = ({ onClose }) => {
-            const realUser = JSON.parse(localStorage.getItem('v21_user'));
-            const data = realUser ? [{name: realUser.name + ' (当前)', score: realUser.exp || 0, wrong: realUser.wrong?.length || 0}] : [];
+        const TeacherPanel = ({ onClose }) => (
+            <div className="fixed inset-0 bg-white z-[80] flex flex-col p-6">
+                <div className="flex justify-between items-center mb-6"><h2 className="text-3xl font-black">教师后台</h2><button onClick={onClose} className="text-xl bg-gray-200 px-4 py-2 rounded">关闭</button></div>
+                <div className="text-center text-gray-400 py-10">数据加载中...</div>
+            </div>
+        );
 
-            return (
-                <div className="fixed inset-0 bg-white z-[80] flex flex-col p-6 overflow-auto">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-3xl font-black text-gray-800">👩‍🏫 教师后台管理 (真实数据)</h2>
-                        <button onClick={onClose} className="text-xl bg-gray-200 px-4 py-2 rounded-lg">退出</button>
+        const Leaderboard = ({ userExp, onClose }) => (
+            <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6" onClick={onClose}>
+                <div className="bg-white w-full max-w-md rounded-3xl p-6 modal-enter" onClick={e=>e.stopPropagation()}>
+                    <h3 className="text-2xl font-black text-yellow-600 mb-4">🏆 排行榜</h3>
+                    <div className="p-4 bg-yellow-50 rounded-xl border-2 border-yellow-200 flex justify-between items-center">
+                        <span className="font-bold">我</span>
+                        <span className="font-black text-blue-600">{userExp} EXP</span>
                     </div>
-                    
-                    {data.length === 0 ? <div className="text-center text-gray-400 py-10">暂无学生数据</div> :
-                    <div className="grid grid-cols-1 gap-6">
-                        <div className="bg-gray-50 p-6 rounded-2xl border-2 border-gray-100">
-                            <h3 className="text-xl font-bold mb-4">📝 学生详细列表</h3>
-                            <div className="space-y-2 max-h-60 overflow-y-auto">
-                                {data.map((s,i)=>(
-                                    <div key={i} className="flex justify-between p-3 bg-white rounded-lg shadow-sm">
-                                        <span className="font-bold">#{i+1} {s.name}</span>
-                                        <div className="flex gap-4">
-                                            <span className="text-red-500 font-bold">错题: {s.wrong}</span>
-                                            <span className="text-blue-600 font-black">{s.score} EXP</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>}
-                </div>
-            );
-        };
-
-        const Leaderboard = ({ userExp, onClose }) => {
-            return (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={onClose}>
-                    <div className="bg-white w-full max-w-md rounded-3xl p-6 modal-enter" onClick={e=>e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-2xl font-black text-yellow-600">🏆 我的排名</h3>
-                            <button onClick={onClose} className="text-2xl">×</button>
-                        </div>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between p-4 rounded-xl border-2 bg-yellow-50 border-yellow-300">
-                                <div className="flex items-center gap-3">
-                                    <span className="font-black text-lg w-6 text-yellow-500">1</span>
-                                    <span className="text-2xl">😊</span>
-                                    <span className="font-bold text-gray-700">我 (当前玩家)</span>
-                                </div>
-                                <span className="font-black text-blue-600">{userExp}</span>
-                            </div>
-                            <p className="text-center text-gray-400 text-sm mt-4">加油！你是最棒的！</p>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const RankInfoModal = ({ currentExp, onClose }) => {
-            return (
-                <div className="fixed inset-0 bg-black/60 z-[65] flex items-center justify-center p-4" onClick={onClose}>
-                    <div className="bg-white w-full max-w-md rounded-3xl p-6 modal-enter" onClick={e=>e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-4 border-b pb-2">
-                            <h3 className="text-xl font-black text-gray-800">🏆 段位成长体系</h3>
-                            <button onClick={onClose} className="text-2xl text-gray-400">×</button>
-                        </div>
-                        <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-                            {RANKS.map((r, i) => {
-                                const isUnlocked = currentExp >= r.minExp;
-                                return (
-                                    <div key={i} className={`flex items-center justify-between p-3 rounded-xl border-2 ${isUnlocked ? 'bg-white border-blue-200' : 'bg-gray-50 border-gray-200 opacity-60'}`}>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-3xl">{r.icon}</span>
-                                            <div>
-                                                <div className={`font-bold ${isUnlocked?'text-gray-800':'text-gray-500'}`}>{r.name}</div>
-                                                <div className="text-xs text-gray-400">需要 {r.minExp} EXP</div>
-                                            </div>
-                                        </div>
-                                        {isUnlocked && <span className="text-green-500 font-bold text-sm">已解锁</span>}
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const TimeLimitModal = ({ onClose }) => (
-            <div className="fixed inset-0 bg-black/90 z-[99] flex items-center justify-center p-6">
-                <div className="bg-white w-full max-w-sm rounded-3xl p-8 text-center modal-enter">
-                    <div className="text-6xl mb-4">😴</div>
-                    <h2 className="text-2xl font-black text-gray-800 mb-2">休息一下吧！</h2>
-                    <p className="text-gray-500 mb-6">你已经学习了很久啦，眼睛需要休息哦。</p>
-                    <Button onClick={onClose} color="blue">好的，我休息一下</Button>
                 </div>
             </div>
         );
 
-      // --- 修复后的 Dashboard (包含PK、挑战、领养、背包等所有入口) ---
-        const Dashboard = ({ user, onStart, onShop, onWrong, onMsg, onLogout, onUpdateUser, onOpenPK, onOpenChallenge, onOpenPet, onOpenBag }) => {
-            const [showMap, setShowMap] = useState(null);
-            const [showRankInfo, setShowRankInfo] = useState(false); 
-            const [showLeaderboard, setShowLeaderboard] = useState(false);
-            
-            const getRank = () => {
-                for(let i=RANKS.length-1; i>=0; i--) if(user.exp >= RANKS[i].minExp) return RANKS[i];
-                return RANKS[0];
-            }
-            const rank = getRank();
-            const canPlayBoss = user.exp >= 1200; 
+        const RankInfoModal = ({ currentExp, onClose }) => (
+            <div className="fixed inset-0 bg-black/60 z-[65] flex items-center justify-center p-4" onClick={onClose}>
+                <div className="bg-white w-full max-w-md rounded-3xl p-6 modal-enter" onClick={e=>e.stopPropagation()}>
+                    <div className="flex justify-between mb-4 border-b pb-2"><h3 className="font-black text-gray-800">段位表</h3><button onClick={onClose}>×</button></div>
+                    <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                        {RANKS.map((r, i) => (
+                            <div key={i} className={`p-2 flex justify-between rounded ${currentExp>=r.minExp?'bg-blue-50 text-blue-800':'bg-gray-50 text-gray-400'}`}>
+                                <span>{r.icon} {r.name}</span><span className="text-xs">{r.minExp} EXP</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
 
-            const handleAddCoin = (amount) => {
-                const newUser = { ...user, coins: user.coins + amount };
-                onUpdateUser(newUser); 
+        const TimeLimitModal = ({ onClose }) => null; // 简化处理
+
+        // --- 5. Dashboard (仪表盘) ---
+        const Dashboard = ({ user, onStart, onShop, onWrong, onMsg, onLogout, onOpenPK, onOpenChallenge, onOpenPet, onOpenBag, onOpenGacha, onEasterEgg, isMusicOn, onToggleMusic }) => {
+            const [showRank, setShowRank] = useState(false);
+            const [showLeader, setShowLeader] = useState(false);
+            const rank = RANKS.find((r, i) => user.exp >= r.minExp && (i === RANKS.length - 1 || user.exp < RANKS[i+1].minExp)) || RANKS[0];
+
+            // 封装带音效的点击函数，减少重复代码
+            const clickWithSound = (action) => {
+                SoundSystem.play('click'); // 播放啵啵声
+                if (action) action();
             };
 
             return (
                 <div className="min-h-screen p-4 pb-24">
-                    {/* 顶部信息栏 */}
-                    <div className="glass-card !p-3 !rounded-2xl mb-6 flex justify-between items-center relative overflow-hidden">
-                        <div className="flex items-center gap-3 z-10">
-                            <div className="w-14 h-14 bg-white rounded-full border-4 border-blue-100 flex items-center justify-center overflow-hidden cursor-pointer" onClick={()=>setShowLeaderboard(true)}>
-                                <PokeImg id={user.pid} className="w-12 h-12" />
+                    {/* --- 👇 顶部仪表盘 (含彩蛋 + 手机适配) 👇 --- */}
+                    <div className="glass-card !p-3 !rounded-2xl mb-4 flex flex-col md:flex-row justify-between items-center gap-3">
+                        
+                        {/* 左侧：头像与等级 */}
+                        <div className="flex items-center gap-3 w-full md:w-auto border-b md:border-b-0 pb-2 md:pb-0 border-gray-100">
+                            {/* 🥚 彩蛋 1：点击头像 (加金币) */}
+                            <div className="w-14 h-14 bg-white rounded-full border-4 border-blue-100 overflow-hidden shrink-0 cursor-pointer active:scale-90 transition-transform" 
+                                 onClick={() => { 
+                                     clickWithSound(); 
+                                     if(confirm('要触发隐藏彩蛋吗？')) onEasterEgg(); 
+                                 }}>
+                                <PokeImg id={user.pid} className="w-full h-full" />
                             </div>
-                            <div onClick={()=>setShowRankInfo(true)} className="cursor-pointer">
-                                <div className="font-black text-gray-800 text-lg flex items-center gap-2">
-                                    {user.name} 
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${rank.color} border`}>{rank.icon} {rank.name}</span>
-                                </div>
-                                <div className="text-xs font-bold text-gray-400">EXP: {user.exp}</div>
-                                <div className="text-xs font-bold text-green-600">体力: {user.stamina}/100</div>
-                            </div>
-                        </div>
-                        <div className="flex gap-2 z-10">
-                            <button onClick={onLogout} className="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center text-sm font-bold shadow-sm active:scale-95 border border-red-100">退出</button>
                             
-                            {/* 领养中心按钮 */}
-                            <button onClick={onOpenPet} className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl shadow-sm active:scale-95 relative border-b-4 border-green-200 active:border-b-0 active:translate-y-1 transition-all">
-                                🐾 {user.tokens > 0 && <span className="wrong-tag">{user.tokens}</span>}
-                            </button>
-
-                            <button onClick={onOpenBag} className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl shadow-sm active:scale-95 border border-blue-200">🎒</button>
-                            <button onClick={onWrong} className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-xl shadow-sm active:scale-95 relative">📕 {user.wrong && user.wrong.length>0 && <span className="wrong-tag">{user.wrong.length}</span>}</button>
-                            <button onClick={onShop} className="h-10 px-3 bg-yellow-100 rounded-xl flex items-center gap-1 font-black text-yellow-700 shadow-sm active:scale-95">🪙 {user.coins}</button>
-                        </div>
-                    </div>
-
-                    {/* 🆕 功能入口区域 */}
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div onClick={onOpenPK} className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-blue-200 cursor-pointer transform hover:scale-[1.02] transition active:scale-95 relative overflow-hidden group">
-                            <div className="absolute right-0 bottom-0 opacity-20 text-6xl transform translate-x-2 translate-y-2 group-hover:rotate-12 transition">⚔️</div>
-                            <div className="text-xl font-black mb-1">PK 对战</div>
-                            <div className="text-xs font-bold opacity-80 bg-white/20 inline-block px-2 py-1 rounded">人机对决</div>
-                        </div>
-                        <div onClick={onOpenChallenge} className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-4 text-white shadow-lg shadow-orange-200 cursor-pointer transform hover:scale-[1.02] transition active:scale-95 relative overflow-hidden group">
-                            <div className="absolute right-0 bottom-0 opacity-20 text-6xl transform translate-x-2 translate-y-2 group-hover:rotate-12 transition">📜</div>
-                            <div className="text-xl font-black mb-1">挑战之路</div>
-                            <div className="text-xs font-bold opacity-80 bg-white/20 inline-block px-2 py-1 rounded">真题模拟</div>
-                        </div>
-                    </div>
-
-                    {/* BOSS 入口 */}
-                    <div className="mb-6">
-                        <div onClick={()=>canPlayBoss && onStart('BOSS', 'APP')} className={`glass-card relative h-28 overflow-hidden cursor-pointer group boss-glow transition-all ${!canPlayBoss?'opacity-60 grayscale':''}`}>
-                            <div className="absolute right-0 top-[-20px] w-40 h-40 opacity-30 group-hover:opacity-100 transition-opacity duration-500">
-                                <PokeImg id={150} className="w-full h-full" />
-                            </div>
-                            <div className="p-5 h-full flex flex-col justify-center relative z-10">
-                                <h3 className="text-3xl font-black text-yellow-600 italic">⚡️ BOSS 讨伐</h3>
-                                <p className="text-yellow-700 font-bold text-sm mt-1">{canPlayBoss ? '传说宝可梦出现！' : '黄金段位后解锁'}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 单元列表 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.keys(ENEMIES).filter(k=>k!=='BOSS').map((mid, idx) => (
-                            <div key={mid} className="glass-card relative h-48 group overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform">
-                                <div className="absolute right-[-20px] top-[-20px] opacity-20 group-hover:opacity-40 transition-opacity">
-                                    <PokeImg id={ENEMIES[mid][0]} className="w-32 h-32" />
+                            <div className="flex-1">
+                                {/* ✅ 修复：点击名字/段位图标 -> 显示段位表 */}
+                                <div className="font-black text-gray-800 text-lg flex items-center gap-2 cursor-pointer"
+                                     onClick={() => { 
+                                         clickWithSound(); 
+                                         setShowRank(true); // 确保这里只调用显示段位
+                                     }}>
+                                    {user.name} 
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${rank.color} border shrink-0`}>
+                                        {rank.icon} {rank.name}
+                                    </span>
                                 </div>
                                 
-                                <div className="p-5 h-full flex flex-col justify-between relative z-10">
-                                    <div>
-                                        <div className="flex justify-between items-start">
-                                            <h3 className="text-2xl font-black text-gray-700">第{idx+1}单元</h3>
-                                            <button onClick={(e)=>{e.stopPropagation(); setShowMap(mid)}} className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-bold hover:bg-blue-200">🧠 脑图</button>
-                                        </div>
-                                        <p className="text-gray-400 font-bold text-sm mt-1">{['时分秒','加减(一)','测量','加减(二)','倍的认识','乘法','编码','分数'][idx]}</p>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <Button onClick={()=>onStart(mid, 'BASIC')} color="blue" size="sm">基础训练</Button>
-                                        <Button onClick={()=>onStart(mid, 'APP')} color="green" size="sm">应用挑战</Button>
-                                    </div>
+                                {/* 🥚 彩蛋 2：点击 EXP 数字 -> 触发彩蛋 */}
+                                <div className="text-xs font-bold text-gray-400 cursor-pointer hover:text-yellow-500"
+                                     onClick={(e) => { 
+                                         e.stopPropagation(); // 防止冒泡，点这里只触发彩蛋，不弹段位表
+                                         clickWithSound(); 
+                                         onEasterEgg(); 
+                                     }}>
+                                    EXP: {user.exp} | ⚡{user.stamina}
                                 </div>
                             </div>
-                        ))}
+                        </div>
+
+                        {/* 右侧：功能按钮组 (带音效) */}
+                        <div className="flex gap-2 flex-wrap justify-end w-full md:w-auto">
+                            <button onClick={() => clickWithSound(onLogout)} className="w-10 h-10 bg-gray-200 rounded-xl font-bold text-xs shadow-sm active:scale-95 transition-transform">退</button>
+                        {/* 🎵 音乐开关 */}
+                            <button 
+                                onClick={() => clickWithSound(onToggleMusic)} 
+                                className={`w-10 h-10 rounded-xl font-bold text-xl shadow-sm active:scale-95 transition-transform border-b-4 ${isMusicOn ? 'bg-yellow-100 border-yellow-200' : 'bg-gray-200 border-gray-300 grayscale'}`}
+                            >
+                                {isMusicOn ? '🎵' : '🔇'}
+                            </button>
+                            <button onClick={() => clickWithSound(onOpenGacha)} className="w-10 h-10 bg-purple-100 rounded-xl border-b-4 border-purple-200 text-xl active:border-b-0 active:translate-y-1 active:scale-95 transition-transform">🔮</button>
+                            <button onClick={() => clickWithSound(onOpenPet)} className="w-10 h-10 bg-green-100 rounded-xl border-b-4 border-green-200 text-xl relative active:border-b-0 active:translate-y-1 active:scale-95 transition-transform">
+                                🐾 {user.tokens>0 && <span className="wrong-tag">{user.tokens}</span>}
+                            </button>
+                            
+                            {/* 📕 错题本 */}
+                            <button onClick={() => clickWithSound(onWrong)} className="w-10 h-10 bg-red-100 rounded-xl border-b-4 border-red-200 text-xl active:border-b-0 active:translate-y-1 active:scale-95 transition-transform">📕</button>
+                            
+                            <button onClick={() => clickWithSound(onOpenBag)} className="w-10 h-10 bg-blue-100 rounded-xl border-b-4 border-blue-200 text-xl active:border-b-0 active:translate-y-1 active:scale-95 transition-transform">🎒</button>
+                            <button onClick={() => clickWithSound(onShop)} className="h-10 px-3 bg-yellow-100 rounded-xl border-b-4 border-yellow-200 font-black text-yellow-700 active:border-b-0 active:translate-y-1 active:scale-95 transition-transform shrink-0">
+                                🪙 {user.coins}
+                            </button>
+                        </div>
+                    </div>
+                    {/* --- 👆 仪表盘结束 👆 --- */}
+
+                    {/* 中间入口 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div onClick={() => clickWithSound(onOpenPK)} className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-lg cursor-pointer active:scale-95 transition-transform hover:scale-[1.02]">
+                            <div className="text-4xl mb-2">⚔️</div><div className="font-black text-xl">PK 对战</div>
+                        </div>
+                        <div onClick={() => clickWithSound(onOpenChallenge)} className="bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl p-4 text-white shadow-lg cursor-pointer active:scale-95 transition-transform hover:scale-[1.02]">
+                            <div className="text-4xl mb-2">🏆</div><div className="font-black text-xl">挑战之路</div>
+                        </div>
                     </div>
 
-                    {showMap && <KnowledgeMap mid={showMap} onClose={()=>setShowMap(null)} onAddCoin={handleAddCoin} />}
-                    {showRankInfo && <RankInfoModal currentExp={user.exp} onClose={()=>setShowRankInfo(false)} />}
-                    {showLeaderboard && <Leaderboard userExp={user.exp} onClose={()=>setShowLeaderboard(false)} />}
+                    {/* 下方单元格列表 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {Object.keys(ENEMIES).map((mid, idx) => {
+                            const isBoss = mid === 'BOSS';
+                            const isLocked = isBoss && user.exp < 1200;
+
+                            return (
+                                <div key={mid} className={`glass-card p-5 flex flex-col relative overflow-hidden transition-all ${isLocked ? 'grayscale opacity-90' : 'hover:scale-[1.02]'}`}>
+                                    
+                                    {isLocked && (
+                                        <div className="absolute inset-0 z-20 bg-gray-100/50 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-4">
+                                            <div className="text-4xl mb-2">🔒</div>
+                                            <div className="font-black text-gray-600 bg-white/80 px-3 py-1 rounded-lg border-2 border-gray-300">
+                                                需达到 黄金段位
+                                            </div>
+                                            <div className="text-xs text-gray-500 mt-1 font-bold">当前EXP: {user.exp}/1200</div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex justify-between items-start mb-4 pl-1">
+                                        <div>
+                                            <h3 className={`font-black text-2xl mb-1 ${isBoss ? 'text-red-600' : 'text-slate-800'}`}>
+                                                {idx === Object.keys(ENEMIES).length - 1 ? '🔥 BOSS关' : `第 ${idx+1} 单元`}
+                                            </h3>
+                                            <div className="text-base text-slate-500 font-bold bg-white/50 px-2 py-1 rounded-lg inline-block">
+                                                {UNIT_NAMES[mid]}
+                                            </div>
+                                        </div>
+                                        <div className="w-20 h-20 opacity-90 -mt-2">
+                                            <PokeImg id={ENEMIES[mid][0]} className="w-full h-full drop-shadow-md"/>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 mt-auto">
+                                        <Button disabled={isLocked} onClick={()=>onStart(mid, 'BASIC')} color="blue" className="w-full !text-xl py-4 shadow-blue-200">
+                                            基础
+                                        </Button>
+                                        <Button disabled={isLocked} onClick={()=>onStart(mid, 'APP')} color="green" className="w-full !text-xl py-4 shadow-green-200">
+                                            应用
+                                        </Button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {showRank && <RankInfoModal currentExp={user.exp} onClose={()=>setShowRank(false)} />}
+                    {showLeader && <Leaderboard userExp={user.exp} onClose={()=>setShowLeader(false)} />}
                 </div>
             );
         };
+
+        // --- 核心战斗组件 ---
         const Battle = ({ mid, mode, user, onClose, onRes, onShowMap }) => {
             const [q, setQ] = useState(null);
             const [ans, setAns] = useState('');
@@ -1859,105 +1967,70 @@
                 if(!ans) return;
                 const right = ans.trim() === q.a;
                 if(right) {
+                    SoundSystem.play('attack'); // ✅ 播放清脆的叮铃声
                     setStatus('attack');
-                    speak("太棒了！答对了！"); 
-                    confetti({ origin: { y: 0.7 } });
+                    speak("太棒了！"); 
+                    if(window.confetti) window.confetti({ origin: { y: 0.7 } });
                     setTimeout(() => setShowCoin(true), 400); 
-                    setTimeout(() => {
-                        onRes(true, q);
-                        nextQ();
-                    }, 1500);
+                    setTimeout(() => { onRes(true, q); nextQ(); }, 1500);
                 } else {
+                    SoundSystem.play('hit'); // ❌ 播放可爱的下沉音
                     setStatus('hit');
-                    
-                    const explainText = q.e || "再试一次吧";
-                    speak(`哎呀，不对哦。正确答案是${q.a}。${explainText}`);
-                    
-                    setTimeout(() => {
-                        onRes(false, q);
-                        setShowExplanation(true); 
-                    }, 500);
+                    speak(`不对哦。正确答案是${q.a}`);
+                    setTimeout(() => { onRes(false, q); setShowExplanation(true); }, 500);
                 }
             };
-
-            const handleViewKnowledge = () => {
-                onClose();
-                onShowMap(mid);
-            }
-
             if(!q) return null;
 
             return (
                 <div className="fixed inset-0 bg-gray-900 z-50 flex flex-col">
                     <div className={`flex-1 relative overflow-hidden ${mid==='BOSS'?'bg-gradient-to-b from-gray-900 to-purple-900':'bg-gradient-to-b from-blue-300 to-blue-100'}`}>
                         <button onClick={onClose} className="absolute top-4 left-4 bg-white/50 backdrop-blur px-3 py-1 rounded-full font-bold text-sm z-20">🏳️ 撤退</button>
-                        
-                        {/* 敌方 / 金币 */}
                         <div className={`absolute top-12 right-8 w-40 h-40 flex items-center justify-center transition-all ${status==='attack' && !showCoin ? 'hit-anim' : ''}`}>
-                            {showCoin ? (
-                                <div className="text-6xl coin-appear">🪙</div>
-                            ) : (
-                                <div className={showCoin ? 'hidden' : (status === 'attack' ? 'coin-transform' : '')}>
-                                    <PokeImg id={enemy} className="w-full h-full drop-shadow-xl filter" style={{filter: mid==='BOSS'?'drop-shadow(0 0 10px gold)':''}} />
-                                </div>
-                            )}
-                            {showCoin && <div className="absolute top-[-20px] text-yellow-400 font-black text-xl animate-bounce">+{mid==='BOSS'?50:10}</div>}
+                            {showCoin ? <div className="text-6xl coin-appear">🪙</div> : <div className={showCoin?'hidden':(status==='attack'?'coin-transform':'')}><PokeImg id={enemy} className="w-full h-full drop-shadow-xl"/></div>}
                         </div>
-
-                        {/* 我方 */}
                         <div className={`absolute bottom-8 left-8 w-32 h-32 transition-all ${status==='attack'?'attack-anim':''}`}>
                             <PokeImg id={user.pid} isBack={true} className="w-full h-full drop-shadow-xl" />
-                            <div className="bg-white/80 px-2 py-1 rounded text-xs font-bold text-center mt-2">{user.name}</div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-t-3xl p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative -mt-6">
-                        <div className="text-center mb-6">
-                            <h2 className="text-xl font-black text-gray-800 leading-relaxed">{q.t}</h2>
-                        </div>
-
+                    <div className="bg-white rounded-t-3xl p-6 shadow-2xl relative -mt-6">
+                        <div className="text-center mb-6"><h2 className="text-xl font-black text-gray-800 leading-relaxed">{q.t}</h2></div>
                         {q.type === 'MC' ? (
-                            // 选择题 (MC) 显示选项
-                            <div className="grid gap-3">
-                                {q.o.map(opt => (
-                                    <Button key={opt} onClick={()=>{setAns(opt); setTimeout(check, 100);}} color={ans===opt?'yellow':'blue'} className="w-full !text-lg">
-                                        {opt}
-                                    </Button>
-                                ))}
-                            </div>
+                            <div className="grid gap-3">{q.o.map(opt => <Button key={opt} onClick={()=>{setAns(opt); setTimeout(check, 100);}} color={ans===opt?'yellow':'blue'} className="w-full !text-lg">{opt}</Button>)}</div>
                         ) : (
-                            // 填空/应用题 (INPUT) 只显示输入框和数字键盘
                             <div>
                                 <div className="bg-gray-100 p-4 rounded-xl text-center text-3xl font-black text-blue-600 mb-4 h-16 border-2 border-blue-200">{ans}</div>
                                 <div className="grid grid-cols-4 gap-2">
-                                    {[1,2,3,4,5,6,7,8,9,0].map(n => (
-                                        <button key={n} onClick={()=>setAns(s=>s+n)} className="h-12 bg-white border-2 border-gray-200 rounded-lg text-xl font-bold shadow-sm active:bg-gray-50">{n}</button>
-                                    ))}
-                                    <button onClick={()=>setAns(s=>s+':')} className="h-12 bg-white border-2 border-gray-200 rounded-lg text-xl font-bold shadow-sm active:bg-gray-50">:</button>
-                                    <button onClick={()=>setAns(s=>s.slice(0,-1))} className="h-12 bg-red-50 text-red-500 rounded-lg font-bold border-2 border-red-100">⌫</button>
+                                    {[1,2,3,4,5,6,7,8,9,0].map(n => <button key={n} onClick={()=>setAns(s=>s+n)} className="h-12 bg-white border rounded-lg text-xl font-bold shadow-sm">{n}</button>)}
+                                    <button onClick={()=>setAns(s=>s+':')} className="h-12 bg-white border rounded-lg text-xl font-bold">:</button>
+                                    <button onClick={()=>setAns(s=>s.slice(0,-1))} className="h-12 bg-red-50 text-red-500 rounded-lg font-bold">⌫</button>
                                     <button onClick={check} className="h-12 col-span-2 bg-green-500 text-white rounded-lg font-bold shadow">提交</button>
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* 解析弹窗 */}
                     {showExplanation && (
-                        <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
-                            <div className="bg-white w-full max-w-sm rounded-3xl p-6 modal-enter text-center">
-                                <div className="text-4xl mb-2">💡</div>
-                                <h3 className="text-xl font-black text-gray-800 mb-2">答案解析</h3>
-                                <p className="text-gray-600 mb-4 font-bold text-lg">正确答案：<span className="text-green-500">{q.a}</span></p>
-                                <div className="bg-blue-50 p-3 rounded-xl text-blue-800 text-sm mb-6 text-left">
-                                    {q.e || "这道题有点难，下次仔细一点哦！"}
+                        <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-6 backdrop-blur-sm">
+                            <div className="bg-white w-full max-w-sm rounded-3xl p-6 modal-enter text-center shadow-2xl border-4 border-red-100">
+                                <div className="text-4xl mb-2">🥀</div>
+                                <h3 className="text-xl font-black text-gray-800 mb-2">很遗憾，答错了</h3>
+                                <div className="bg-red-50 p-4 rounded-xl text-left mb-6">
+                                    <p className="text-gray-500 text-xs mb-1">正确答案是：</p>
+                                    <p className="text-2xl font-black text-green-600 mb-3">{q.a}</p>
+                                    <div className="border-t border-red-200 pt-2">
+                                        <span className="font-bold text-red-500 text-sm">💡 解析：</span>
+                                        <span className="text-gray-700 text-sm">{q.e || "这就去查看知识地图吧！"}</span>
+                                    </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button onClick={handleViewKnowledge} color="yellow" className="flex-1 text-sm">🔍 查看知识点</Button>
-                                    <Button onClick={nextQ} color="blue" className="flex-1 text-sm">💪 继续挑战</Button>
+                                    <Button onClick={()=>{onClose(); onShowMap(mid);}} color="yellow" className="flex-1 text-sm">📖 学习知识点</Button>
+                                    <Button onClick={nextQ} color="blue" className="flex-1 text-sm">👊 再来一题</Button>
                                 </div>
                             </div>
                         </div>
-                    )}
+                   )}
                 </div>
             );
         };
@@ -1966,45 +2039,100 @@
             <div className="fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-6" onClick={onClose}>
                 <div className="text-center levelup-enter">
                     <div className="text-8xl mb-4 animate-bounce">{rank.icon}</div>
-                    <h2 className="text-4xl font-black text-yellow-400 mb-2 drop-shadow-lg">等级提升！</h2>
-                    <p className="text-white text-xl font-bold">恭喜晋升为 <span className="text-yellow-300">{rank.name}</span> 训练师！</p>
+                    <h2 className="text-4xl font-black text-yellow-400 mb-2">等级提升！</h2>
+                    <p className="text-white text-xl font-bold">晋升为 <span className="text-yellow-300">{rank.name}</span> ！</p>
                     <Button onClick={onClose} color="yellow" className="mt-8 w-40 mx-auto">太棒了！</Button>
                 </div>
             </div>
         );
 
+        const GachaMachine = ({ user, onClose, onDraw }) => {
+            const [isSpinning, setIsSpinning] = useState(false);
+            const [prize, setPrize] = useState(null);
+
+            const handleDraw = (type) => {
+                const cost = type === 'normal' ? 200 : 1000;
+                if (user.coins < cost) { alert("金币不足！"); return; }
+                
+                setIsSpinning(true); 
+                setPrize(null);
+                
+                // 播放抽奖音效
+                SoundSystem.play('open');
+
+                setTimeout(() => {
+                    const rand = Math.random();
+                    let result;
+
+                    if (type === 'normal') {
+                        // 普通盲盒逻辑不变
+                        if(rand < 0.5) result = { name: "100 经验", type: "exp", val: 100, img: "✨" };
+                        else if(rand < 0.9) result = { name: "体力药水", type: "item", id: "item7", img: "🥛" };
+                        else result = { name: "小猫表情包", type: "item", id: "item2", img: "🐱" };
+                    } else {
+                        // 🔥 高级盲盒逻辑 (调整概率 + 保底)
+                        
+                        // 1. 读取当前的保底计数 (如果没有就默认为0)
+                        let pityCount = user.pityCount || 0;
+                        pityCount++; // 抽一次加一次
+
+                        if (pityCount >= 5) {
+                            // 🎉 触发保底：第5次必出小鼻嘎
+                            result = { name: "小鼻嘎 (保底)", type: "item", id: "item3", img: "🐻‍❄️" };
+                            pityCount = 0; // 重置保底
+                        } else {
+                            // 🎲 正常概率：降低好东西的爆率
+                            // 10% 概率出高级玩具，90% 概率出经验
+                            if (rand < 0.1) {
+                                result = { name: "高级玩具", type: "item", id: "item3", img: "🧸" };
+                                pityCount = 0; // 中了就重置保底
+                            } else {
+                                result = { name: "500 经验", type: "exp", val: 500, img: "🌟" };
+                            }
+                        }
+                        
+                        // 把新的保底数传回去保存
+                        result.newPityCount = pityCount;
+                    }
+
+                    setPrize(result); 
+                    setIsSpinning(false);
+                    SoundSystem.play('win'); // 中奖音效
+                    onDraw(cost, result);
+                }, 2000);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-black/80 z-[90] flex items-center justify-center p-4" onClick={onClose}>
+                    <div className="bg-white w-full max-w-md rounded-3xl p-6 text-center modal-enter" onClick={e=>e.stopPropagation()}>
+                        <button onClick={onClose} className="absolute top-4 right-4 text-2xl">×</button>
+                        <h2 className="text-3xl font-black text-purple-600 mb-2">🔮 幸运盲盒</h2>
+                        <div className="text-xs text-gray-400 mb-4">高级盲盒 5 次必得小鼻嘎</div>
+                        
+                        <div className="h-48 bg-purple-50 rounded-2xl flex items-center justify-center mb-8 border-4 border-purple-200">
+                            {isSpinning ? <div className="text-8xl animate-spin">📦</div> : prize ? <div className="animate-bounce"><div className="text-6xl mb-2">{prize.img}</div><div className="font-bold text-xl text-purple-800">{prize.name}</div></div> : <div className="text-6xl opacity-50">❓</div>}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button onClick={() => !isSpinning && handleDraw('normal')} className="bg-blue-100 p-4 rounded-xl font-bold text-blue-800">普通 (200)</button>
+                            <button onClick={() => !isSpinning && handleDraw('premium')} className="bg-yellow-100 p-4 rounded-xl font-bold text-yellow-800">高级 (1000)</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
         const Shop = ({ user, onClose, onBuy }) => (
             <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" onClick={onClose}>
                 <div className="bg-white w-full max-w-lg h-[80vh] rounded-3xl flex flex-col overflow-hidden modal-enter" onClick={e=>e.stopPropagation()}>
-                    <div className="p-4 bg-yellow-50 border-b flex justify-between items-center">
-                        <h3 className="font-black text-yellow-800 text-lg">🎁 宝可梦百货 (余额: {user.coins})</h3>
-                        <button onClick={onClose} className="text-2xl">×</button>
-                    </div>
+                    <div className="p-4 bg-yellow-50 border-b flex justify-between items-center"><h3 className="font-black text-yellow-800 text-lg">商店</h3><button onClick={onClose} className="text-2xl">×</button></div>
                     <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3 bg-gray-50">
-                        {SHOP_ITEMS.map(item => {
-                            const owned = (user.inventory||[]).includes(item.id) && item.id !== 'item7'; // 鲜奶可重复买
-                            const canBuy = user.coins >= item.price;
-                            return (
-                                <div key={item.id} className="bg-white p-3 rounded-xl border-2 border-gray-100 shadow-sm flex flex-col items-center text-center relative">
-                                    <div className="text-4xl mb-2">{item.icon}</div>
-                                    <div className="font-bold text-gray-800">{item.name}</div>
-                                    <div className="text-xs text-gray-400 mb-3">{item.desc}</div>
-                                    {owned ? (
-                                        <div className="w-full py-1 bg-green-100 text-green-600 rounded text-xs font-bold">已拥有</div>
-                                    ) : (
-                                        <Button 
-                                            size="sm" 
-                                            color={canBuy ? 'yellow' : 'gray'} 
-                                            onClick={()=>canBuy && onBuy(item)} 
-                                            disabled={!canBuy}
-                                            className="w-full text-sm"
-                                        >
-                                            🪙 {item.price}
-                                        </Button>
-                                    )}
-                                </div>
-                            )
-                        })}
+                        {SHOP_ITEMS.map(item => (
+                            <div key={item.id} className="bg-white p-3 rounded-xl border flex flex-col items-center text-center">
+                                <div className="text-4xl mb-2">{item.icon}</div>
+                                <div className="font-bold">{item.name}</div>
+                                <div className="text-xs text-gray-400 mb-3">{item.desc}</div>
+                                <Button size="sm" color="yellow" onClick={()=>onBuy(item)} className="w-full text-sm">🪙 {item.price}</Button>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -2015,21 +2143,12 @@
             return (
                 <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" onClick={onClose}>
                     <div className="bg-white w-full max-w-md h-[60vh] rounded-3xl flex flex-col overflow-hidden modal-enter" onClick={e=>e.stopPropagation()}>
-                        <div className="p-4 bg-purple-50 border-b flex justify-between items-center">
-                            <h3 className="font-black text-purple-800 text-lg">💌 悄悄话信箱</h3>
-                            <button onClick={onClose} className="text-2xl">×</button>
-                        </div>
+                        <div className="p-4 bg-purple-50 border-b flex justify-between items-center"><h3 className="font-black text-purple-800 text-lg">信箱</h3><button onClick={onClose} className="text-2xl">×</button></div>
                         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-                            {msgs.length===0 && <div className="text-center text-gray-400 mt-10">还没有信件哦~</div>}
-                            {msgs.map((m,i)=>(
-                                <div key={i} className={`p-3 rounded-xl text-sm ${m.isMe?'bg-blue-100 ml-8':'bg-white mr-8 border'}`}>
-                                    <div className="font-bold mb-1 opacity-50">{m.time}</div>
-                                    <div>{m.text}</div>
-                                </div>
-                            ))}
+                            {msgs.map((m,i)=>(<div key={i} className={`p-3 rounded-xl text-sm ${m.isMe?'bg-blue-100 ml-8':'bg-white mr-8 border'}`}>{m.text}</div>))}
                         </div>
                         <div className="p-3 border-t bg-white flex gap-2">
-                            <input value={txt} onChange={e=>setTxt(e.target.value)} className="flex-1 bg-gray-100 rounded-lg px-3 outline-none" placeholder="给老师写信..." />
+                            <input value={txt} onChange={e=>setTxt(e.target.value)} className="flex-1 bg-gray-100 rounded-lg px-3 outline-none" placeholder="写信..." />
                             <button onClick={()=>{if(txt){onSend(txt); setTxt('')}}} className="bg-purple-500 text-white px-4 rounded-lg font-bold">发送</button>
                         </div>
                     </div>
@@ -2037,384 +2156,292 @@
             );
         };
 
-        const WrongBook = ({ list, onClose }) => (
+      const WrongBook = ({ list, onClose }) => (
             <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" onClick={onClose}>
                 <div className="bg-white w-full max-w-md h-[70vh] rounded-3xl flex flex-col overflow-hidden modal-enter" onClick={e=>e.stopPropagation()}>
                     <div className="p-4 bg-red-50 border-b flex justify-between items-center">
                         <h3 className="font-black text-red-800 text-lg">📕 错题本 ({list.length})</h3>
                         <button onClick={onClose} className="text-2xl">×</button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                        {list.length===0 ? <div className="text-center text-gray-400 mt-20 font-bold">太棒了！没有错题！</div> : 
-                        list.map((q,i) => (
-                            <div key={i} className="bg-white border-2 border-red-100 p-4 rounded-xl shadow-sm relative">
-                                <div className="font-bold text-gray-800 mb-2">{q.t}</div>
-                                <div className="text-sm text-green-600 bg-green-50 p-2 rounded">正确答案：{q.a}</div>
-                                <div className="text-xs text-gray-400 mt-2">{q.e}</div>
-                            </div>
-                        ))}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                        {list.length === 0 ? (
+                            <div className="text-center text-gray-400 mt-20">太棒了，没有错题！</div>
+                        ) : (
+                            list.map((q, i) => (
+                                <div key={i} className="bg-white border-l-4 border-red-400 p-4 rounded-xl shadow-sm">
+                                    <div className="font-bold text-gray-800 mb-2">{i+1}. {q.t}</div>
+                                    <div className="flex flex-col gap-1 bg-red-50 p-2 rounded-lg text-sm">
+                                        <div className="text-green-700 font-bold">✅ 正确答案：{q.a}</div>
+                                        {/* 下面这一行就是显示解析的关键 */}
+                                        <div className="text-gray-600 border-t border-red-100 pt-1 mt-1">
+                                            💡 <span className="font-bold">解析：</span>{q.e || "暂无详细解析，请复习对应知识点。"}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
         );
 
-      // --- 修复后的 App 组件 (连接所有功能) ---
+        // --- App 主入口 (逻辑核心) ---
         const App = () => {
             const [view, setView] = useState('LOGIN');
             const [user, setUser] = useState(null);
             const [battleCfg, setBattleCfg] = useState(null);
             const [msgs, setMsgs] = useState([]);
-            
-            // 状态控制
+            const [isMusicOn, setIsMusicOn] = useState(false); // 默认关闭，用户点击后开启
+            // 弹窗状态
             const [showMail, setShowMail] = useState(false);
             const [showWrong, setShowWrong] = useState(false);
             const [showShop, setShowShop] = useState(false);
             const [showBag, setShowBag] = useState(false);
             const [showPet, setShowPet] = useState(false);
-            
-            // 新模式状态
             const [showPK, setShowPK] = useState(false);
             const [showChallenge, setShowChallenge] = useState(false);
-            
+            const [showGacha, setShowGacha] = useState(false); 
             const [newRank, setNewRank] = useState(null);
-            const [showLeaderboard, setShowLeaderboard] = useState(false);
             const [showMapModal, setShowMapModal] = useState(null);
+            const [mapCanLoot, setMapCanLoot] = useState(false);
 
             useEffect(() => {
                 try {
                     const saved = JSON.parse(localStorage.getItem('v21_user'));
                     if(saved) { 
-                        // 强制补全缺失字段
-                        if(saved.stamina === undefined) saved.stamina = 100;
-                        if(!saved.pets) saved.pets = [saved.pid];
-                        if(saved.tokens === undefined) saved.tokens = 0;
-                        if(!saved.wrong) saved.wrong = [];
-                        if(!saved.inventory) saved.inventory = [];
-                        setUser(saved); 
-                        setView('DASH'); 
+                        if(saved.stamina===undefined) saved.stamina=100;
+                        if(!saved.pets) saved.pets=[saved.pid];
+                        if(saved.tokens===undefined) saved.tokens=0;
+                        setUser(saved); setView('DASH'); 
                     }
                     setMsgs(JSON.parse(localStorage.getItem('v21_msgs')||'[]'));
                 } catch(e) {}
-
-                const staminaTimer = setInterval(() => {
-                    setUser(prevUser => {
-                        if (!prevUser || prevUser.stamina >= 100) return prevUser;
-                        const updated = { ...prevUser, stamina: prevUser.stamina + 1 };
-                        localStorage.setItem('v21_user', JSON.stringify(updated));
-                        return updated;
-                    });
+                const t = setInterval(() => {
+                    setUser(u => { if (!u || u.stamina >= 100) return u; const nu={...u, stamina: u.stamina+1}; localStorage.setItem('v21_user', JSON.stringify(nu)); return nu; });
                 }, 60000); 
-                return () => clearInterval(staminaTimer);
+                return () => clearInterval(t);
             }, []);
 
             const saveUser = (u) => { setUser(u); localStorage.setItem('v21_user', JSON.stringify(u)); };
+            const handleRecordWrong = (q) => { 
+                // 1. 防御性检查：如果没有题目内容，直接退出
+                if (!q || !q.t) {
+                    console.warn("尝试记录无效错题:", q);
+                    return;
+                }
 
-            // 错题记录
-            const handleRecordWrong = (q) => {
+                setUser(prev => { 
+                    // 2. 确保 wrong 数组一定存在，即使 prev.wrong 是 undefined
+                    const currentWrongList = Array.isArray(prev.wrong) ? prev.wrong : [];
+                    
+                    // 3. 查重逻辑：检查题目是否已存在（对比题目文字 q.t）
+                    const isExist = currentWrongList.some(item => item.t === q.t);
+
+                    if (!isExist) {
+                        // 4. 构建新错题对象
+                        const newWrongItem = {
+                            t: q.t, 
+                            a: q.a, 
+                            e: q.e || "暂无解析",
+                            time: new Date().toLocaleTimeString() // 加个时间戳方便调试
+                        };
+
+                        // 5. 合并新状态：新题排在最前面
+                        const newUserState = { 
+                            ...prev, 
+                            wrong: [newWrongItem, ...currentWrongList] 
+                        };
+
+                        // 6. 同步写入 LocalStorage (防止刷新丢失)
+                        localStorage.setItem('v21_user', JSON.stringify(newUserState));
+                        
+                        console.log("✅ 已记录错题:", newWrongItem.t); // 控制台日志
+                        return newUserState; 
+                    } 
+                    
+                    // 如果已存在，不更新状态
+                    return prev; 
+                }); 
+            };
+           const handleLogin = (name, pid) => { 
+                SoundSystem.init(); 
+                setIsMusicOn(true); // <--- ✅ 登录时自动开启音乐
+                saveUser({ name, pid, coins:0, exp:0, wrong:[], inventory:[], stamina: 100, pets: [pid], tokens: 0 }); 
+                setView('DASH'); 
+            };
+            const handleStartBattle = (mid, mode) => { if (user.stamina < 5) { alert("体力不足！"); return; } setBattleCfg({mid, mode}); setView('BATTLE'); };
+            
+            const handleResult = (win, q) => {
+                // 1. 先记录错题（如果是失败的话）
+                if (!win) {
+                    handleRecordWrong(q);
+                }
+
+                // 2. 更新用户状态（金币、经验、体力）
                 setUser(prev => {
-                    const currentWrong = prev.wrong || [];
-                    const exists = currentWrong.find(w => w.t === q.t);
-                    if(!exists) {
-                         const newWrongList = [{ t: q.t, a: q.a, e: q.e || "暂无解析" }, ...currentWrong];
-                         const newUser = { ...prev, wrong: newWrongList };
-                         localStorage.setItem('v21_user', JSON.stringify(newUser));
-                         return newUser;
+                    let nu = { ...prev };
+                    
+                    if (win) {
+                        // 胜利逻辑
+                        const addExp = battleCfg.mid === 'BOSS' ? 50 : 10;
+                        // 简单的段位检查逻辑
+                        const getRank = (exp) => RANKS.find((r, i) => exp >= r.minExp && (i === RANKS.length - 1 || exp < RANKS[i+1].minExp)) || RANKS[0];
+                        const oldR = getRank(prev.exp);
+                        const newR = getRank(prev.exp + addExp);
+                        
+                        // 升级判断
+                        if (newR.minExp > oldR.minExp) { 
+                            setTimeout(() => setNewRank(newR), 500); 
+                            nu.tokens = (nu.tokens || 0) + 1; 
+                        }
+                        
+                        nu.coins = (nu.coins || 0) + (battleCfg.mid === 'BOSS' ? 50 : 10);
+                        nu.exp = (nu.exp || 0) + addExp;
+                    } else {
+                        // 失败逻辑：扣体力
+                        nu.stamina = Math.max(0, (nu.stamina || 0) - 5);
                     }
-                    return prev;
+                    
+                    // 保存到本地
+                    localStorage.setItem('v21_user', JSON.stringify(nu));
+                    return nu;
                 });
             };
-
-            const handleLogin = (name, pid) => {
-                saveUser({ name, pid, coins:0, exp:0, wrong:[], inventory:[], stamina: 100, pets: [pid], tokens: 0 });
-                setView('DASH');
-            };
-
-            const handleStartBattle = (mid, mode) => {
-                if (user.stamina < 5) { alert("体力不足！去背包喝牛奶吧！"); return; }
-                setBattleCfg({mid, mode});
-            };
-
-            // 战斗结果处理
-            const handleResult = (win, q) => {
-                let newUser = { ...user };
-                if (!newUser.wrong) newUser.wrong = [];
-
-                if(win) {
-                    const addExp = battleCfg.mid==='BOSS' ? 50 : 10;
-                    const oldRank = getRank(user.exp);
-                    const newExp = user.exp + addExp;
-                    const curRank = getRank(newExp);
-                    
-                    if (curRank.minExp > oldRank.minExp) {
-                        setTimeout(() => setNewRank(curRank), 500);
-                        newUser.tokens = (newUser.tokens || 0) + 1; // 升级送券
-                    }
-                    newUser.coins += (battleCfg.mid==='BOSS' ? 50 : 10);
-                    newUser.exp = newExp;
-                } else {
-                    handleRecordWrong(q); // 记录错题
-                    newUser.stamina = Math.max(0, newUser.stamina - 5);
-                }
-                saveUser(newUser);
-            };
-
-            // PK 获胜
-            const handlePKWin = (isWin, diff) => {
-                if (isWin) {
-                    const reward = diff === 'HARD' ? 100 : 50;
-                    const newUser = { ...user, coins: user.coins + reward, exp: user.exp + reward };
-                    saveUser(newUser);
-                    alert(`PK胜利！获得 ${reward} 金币和经验！`);
-                }
-                setShowPK(false);
-            };
-
-            // 挑战模式完成
-            const handleChallengeFinish = (score) => {
-                if (score >= 80) {
-                    const newUser = { ...user, coins: user.coins + 100, exp: user.exp + 200, tokens: (user.tokens||0) + 1 };
-                    saveUser(newUser);
-                    alert("挑战成功！奖励：100金币，200经验，1张领养券！");
-                }
-                setShowChallenge(false);
-            };
-
             const handleBuy = (item) => {
-                let newUser = { ...user };
-                if (item.id === 'item7') { 
-                    newUser.stamina = Math.min(100, newUser.stamina + 20);
-                    newUser.coins -= item.price;
-                    alert("体力恢复了 20 点！");
-                } else {
-                    newUser.coins -= item.price;
-                    newUser.inventory = [...(newUser.inventory||[]), item.id];
-                }
-                saveUser(newUser);
+                if (user.coins >= item.price) {
+                    const nu = { ...user, coins: user.coins - item.price };
+                    if (['item','box','real'].some(k=>item.id.startsWith(k))) nu.inventory = [...(nu.inventory||[]), item.id];
+                    saveUser(nu); alert(`购买成功！`);
+                } else alert("金币不足！");
             };
 
             const handleUseItem = (item) => {
-                let newUser = { ...user };
-                const idx = newUser.inventory.indexOf(item.id);
-                if(idx > -1) {
-                    newUser.inventory.splice(idx, 1);
-                    if(item.id === 'item7') {
-                         newUser.stamina = Math.min(100, newUser.stamina + 20);
-                         alert("使用了牛奶，体力+20！");
-                    } else {
-                         alert(`你使用了【${item.name}】，${item.desc}，真好玩！`);
-                    }
-                    saveUser(newUser);
+                if (item.id === 'item1' || item.id === 'item7') {
+                    if (user.stamina >= 100) { alert("体力已满！"); return; }
+                    const nu = { ...user, stamina: Math.min(100, user.stamina + 30) };
+                    const idx = nu.inventory.indexOf(item.id);
+                    if (idx > -1) nu.inventory.splice(idx, 1);
+                    saveUser(nu); alert("体力恢复了 30 点！");
+                } else alert("这个物品只能收藏哦！");
+            };
+
+            const handleGachaDraw = (cost, prize) => {
+                let nu = { ...user, coins: user.coins - cost };
+                
+                // 处理奖励
+                if(prize.type === 'exp') nu.exp += prize.val;
+                else if(['item','real'].includes(prize.type)) nu.inventory = [...(nu.inventory||[]), prize.id];
+                
+                // ✅ 保存保底进度 (如果有的话)
+                if (prize.newPityCount !== undefined) {
+                    nu.pityCount = prize.newPityCount;
                 }
-            };
 
-            const handleSwitchPet = (id) => { saveUser({ ...user, pid: id }); alert("切换成功！"); };
-            const handleAdopt = (id) => {
-                if(user.tokens > 0) {
-                    saveUser({ ...user, pets: [...(user.pets||[]), id], tokens: user.tokens - 1 });
-                    alert("🎉 成功领养！");
+                saveUser(nu);
+            };
+       // 👇 彩蛋逻辑：加金币 + 播放音效
+            // 👇 修复后的彩蛋逻辑：防止重复领取
+            const handleEasterEgg = () => {
+                // 1. 检查是否已经领过
+                if (user.hasEgg) {
+                    alert("这个彩蛋已经被发现啦！留点金币给其他小朋友吧~");
+                    return;
                 }
-            };
 
-            const sendMsg = (txt) => {
-                const newMsgs = [...msgs, { text: txt, isMe: true, time: new Date().toLocaleTimeString() }];
-                setMsgs(newMsgs);
-                localStorage.setItem('v21_msgs', JSON.stringify(newMsgs));
+                // 2. 领取奖励并标记
+                SoundSystem.play('win'); 
+                const nu = { 
+                    ...user, 
+                    coins: (user.coins || 0) + 800,
+                    hasEgg: true // ✅ 标记已领取
+                };
+                saveUser(nu);
+                alert("🎉 恭喜触发隐藏彩蛋！\n💰 获得 800 金币！");
             };
-
-            const getRank = (exp) => { for(let i=RANKS.length-1; i>=0; i--) if(exp >= RANKS[i].minExp) return RANKS[i]; return RANKS[0]; };
+            // 计算当前BGM场景
+            let currentScene = 'LOBBY';
+            if (view === 'BATTLE' && battleCfg) {
+                currentScene = battleCfg.mid === 'BOSS' ? 'BOSS' : 'BATTLE';
+            }
 
             return (
-                <div className="w-full h-full max-w-md mx-auto md:max-w-full bg-slate-50 min-h-screen">
-                    {view === 'LOGIN' && <LoginScreen onLogin={handleLogin} onMsg={()=>setShowMail(true)} onTeacher={()=>setView('TEACHER')} />}
-                    
+                <div className="max-w-4xl mx-auto min-h-screen shadow-2xl relative overflow-hidden">
+                    {/* ✅ 挂载音乐播放器 */}
+                    <MusicPlayer scene={currentScene} isMuted={!isMusicOn} />
+
+                    {view === 'LOGIN' && <LoginScreen onLogin={handleLogin} onTeacher={()=>alert("教师后台开发中")} />}
                     {view === 'DASH' && user && (
                         <Dashboard 
-                            user={user} 
+                            user={user}
                             onStart={handleStartBattle}
-                            onMsg={()=>setShowMail(true)}
-                            onWrong={()=>setShowWrong(true)}
                             onShop={()=>setShowShop(true)}
-                            
-                            onOpenBag={()=>setShowBag(true)} 
-                            onOpenPet={()=>setShowPet(true)} 
+                            onWrong={()=>setShowWrong(true)}
+                            onMsg={()=>setShowMail(true)}
+                            onLogout={()=>{setView('LOGIN'); setUser(null);}}
                             onOpenPK={()=>setShowPK(true)}
                             onOpenChallenge={()=>setShowChallenge(true)}
-                            
-                            onLeaderboard={()=>setShowLeaderboard(true)}
-                            onUpdateUser={saveUser}
-                            onLogout={()=>{setUser(null); setView('LOGIN');}}
+                            onOpenPet={()=>setShowPet(true)}
+                            onOpenBag={()=>setShowBag(true)}
+                            onOpenGacha={()=>setShowGacha(true)}
+                            onEasterEgg={handleEasterEgg} 
+                       // 👇 新增这两个传参
+                            isMusicOn={isMusicOn}
+                            onToggleMusic={() => setIsMusicOn(!isMusicOn)}
                         />
-                    )}
-
-                    {view === 'TEACHER' && <TeacherPanel onClose={()=>setView('LOGIN')} />}
-
-                    {battleCfg && <Battle {...battleCfg} user={user} onClose={()=>setBattleCfg(null)} onRes={handleResult} onShowMap={(mid) => { setBattleCfg(null); setShowMapModal(mid); }} />}
-
-                    {/* 挂载新模式 */}
-                    {showPK && user && <PKBattle user={user} onClose={()=>setShowPK(false)} onWin={handlePKWin} />}
-                    {showChallenge && user && <ChallengePath onClose={()=>setShowChallenge(false)} onFinish={handleChallengeFinish} />}
+                    )} {/* 记得保留这个闭合括号 */}
+                    {view === 'BATTLE' && battleCfg && <Battle mid={battleCfg.mid} mode={battleCfg.mode} user={user} onClose={()=>setView('DASH')} onRes={handleResult} onShowMap={(mid)=>{setShowMapModal(mid); setMapCanLoot(false);}} />}
                     
-                    {showMapModal && <KnowledgeMap mid={showMapModal} onClose={()=>setShowMapModal(null)} onAddCoin={(amount) => saveUser({...user, coins: user.coins + amount})} />}
-                    {showMail && <Mailbox msgs={msgs} onSend={sendMsg} onClose={()=>setShowMail(false)} />}
-                    {showWrong && user && <WrongBook list={user.wrong || []} onClose={()=>setShowWrong(false)} />}
-                    {showShop && user && <Shop user={user} onClose={()=>setShowShop(false)} onBuy={handleBuy} />}
-                    {showBag && user && <Backpack user={user} onClose={()=>setShowBag(false)} onUse={handleUseItem} />}
-                    {showPet && user && <PetCenter user={user} onClose={()=>setShowPet(false)} onSwitch={handleSwitchPet} onAdopt={handleAdopt} />}
-                    
-                    {showLeaderboard && user && <Leaderboard userExp={user.exp} onClose={()=>setShowLeaderboard(false)} />}
+                    {/* 弹窗层 */}
+                    {showShop && <Shop user={user} onClose={()=>setShowShop(false)} onBuy={handleBuy} />}
+                    {showGacha && <GachaMachine user={user} onClose={()=>setShowGacha(false)} onDraw={handleGachaDraw} />}
+                    {showBag && <Backpack user={user} onClose={()=>setShowBag(false)} onUse={handleUseItem} />}
+                    {showPet && <PetCenter user={user} onClose={()=>setShowPet(false)} onSwitch={(pid)=>{saveUser({...user, pid}); alert("更换成功");}} onAdopt={(pid)=>{if(user.tokens>0){saveUser({...user, tokens:user.tokens-1, pets:[...(user.pets||[]), pid]}); alert("领养成功");}}} />}
+                    {showPK && <PKBattle user={user} onClose={()=>setShowPK(false)} onWin={(w,d)=>{if(w){const r=d==='HARD'?100:50; saveUser({...user, coins:user.coins+r, exp:user.exp+r}); alert(`PK胜利！+${r}`);} setShowPK(false);}} />}
+                    {showChallenge && <ChallengePath onClose={()=>setShowChallenge(false)} onFinish={(s)=>{if(s>=80){saveUser({...user, coins:user.coins+100, exp:user.exp+200, tokens:(user.tokens||0)+1}); alert("挑战成功！奖励已发！");} setShowChallenge(false);}} />}
                     {newRank && <LevelUpModal rank={newRank} onClose={()=>setNewRank(null)} />}
+                    {showMapModal && <KnowledgeMap mid={showMapModal} onClose={()=>setShowMapModal(null)} onAddCoin={(n)=>alert(`获得${n}金币`)} canLoot={mapCanLoot} />}
+                    {showMail && <Mailbox msgs={msgs} onSend={(txt)=>{const nm=[...msgs,{text:txt, time:new Date().toLocaleTimeString(), isMe:true}]; setMsgs(nm); localStorage.setItem('v21_msgs', JSON.stringify(nm));}} onClose={()=>setShowMail(false)} />}
+                    {showWrong && <WrongBook list={user.wrong||[]} onClose={()=>setShowWrong(false)} />}
                 </div>
             );
         };
-/* --- 🧠 智能增强模块 (洗牌算法 + 题库检视) --- */
-        (function() {
-            // 1. 定义智能洗牌逻辑
-            const SmartMixin = {
-                _bags: {}, // 用来存放每个单元洗牌后的题目索引
 
-                get: function(mid, mode, history=[]) {
-                    // BOSS关卡保持原样
-                    if(mid === 'BOSS') {
-                        const pool = [...(STATIC_DB.BOSS.APP || []), this.BOSS(this), this.BOSS(this)];
-                        return pool[Math.floor(Math.random() * pool.length)];
-                    }
-
-                    const key = mid + '_' + mode;
-                    
-                    // 如果袋子不存在，或者袋子空了，就重新“洗牌”
-                    if (!this._bags[key] || this._bags[key].length === 0) {
-                        const staticList = STATIC_DB[mid]?.[mode] || [];
-                        // 创建索引列表 [0, 1, 2, ... n]
-                        let indices = staticList.map((_, i) => i);
-                        
-                        // 为了增加变化，我们在固定题库中混入 30% 的动态生成题
-                        // 用 -1 代表动态题
-                        const dynCount = Math.max(2, Math.floor(indices.length * 0.4));
-                        for(let i=0; i<dynCount; i++) indices.push(-1);
-                        
-                        // 洗牌算法 (Fisher-Yates Shuffle)
-                        for (let i = indices.length - 1; i > 0; i--) {
-                            const j = Math.floor(Math.random() * (i + 1));
-                            [indices[i], indices[j]] = [indices[j], indices[i]];
-                        }
-                        
-                        this._bags[key] = indices;
-                        console.log(`[智能题库] ${key} 洗牌完成，池中剩余 ${indices.length} 道题`);
-                    }
-
-                    // 从袋子里拿出一道题
-                    const index = this._bags[key].pop();
-                    let q;
-
-                    if (index === -1) {
-                        // 如果抽到 -1，则现场生成一道新题
-                        const genFunc = this[mid] || this.M2;
-                        q = genFunc(this);
-                        if (mode === 'APP') q.type = 'INPUT';
-                    } else {
-                        // 否则取固定题库中的题
-                        q = STATIC_DB[mid][mode][index];
-                    }
-
-                    // 双重保险：虽然洗牌算法已经避免了重复，但还是检查一下上一题
-                    // 如果万一跟上一题文字完全一样（极小概率动态题撞车），就再抽一次
-                    if (history.length > 0 && history[history.length-1] === q.t) {
-                         return this.get(mid, mode, history); 
-                    }
-
-                    return q;
+        // --- 智能洗牌逻辑定义 ---
+        const SmartMixin = {
+            _bags: {},
+            get: function(mid, mode, history=[]) {
+                if(mid === 'BOSS') {
+                    const pool = [...(STATIC_DB.BOSS.APP || []), this.BOSS(this), this.BOSS(this)];
+                    return pool[Math.floor(Math.random() * pool.length)];
                 }
-            };
-
-            // 2. 将智能逻辑覆盖到原生成器上
-            Object.assign(Generator, SmartMixin);
-            console.log("✅ 智能洗牌生成器已激活！题目将不再连续重复。");
-
-            // 3. 题库检视器组件 (React)
-            const QuestionViewer = () => {
-                const [show, setShow] = useState(false);
-                const [filter, setFilter] = useState('ALL');
-
-                if(!show) return (
-                    <button 
-                        onClick={()=>setShow(true)} 
-                        className="fixed bottom-2 left-2 z-[9999] bg-gray-800/80 text-white px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-700 transition-all hover:scale-110"
-                        title="点击查看所有题目"
-                    >
-                        🔍 题库 ({Object.values(STATIC_DB).reduce((a,c)=>a+(c.BASIC?.length||0)+(c.APP?.length||0), 0)})
-                    </button>
-                );
-
-                return (
-                    <div className="fixed inset-0 bg-white/95 z-[10000] overflow-hidden flex flex-col animate-fade-in font-sans">
-                        <div className="p-4 border-b bg-white shadow-sm flex justify-between items-center flex-shrink-0">
-                            <div>
-                                <h2 className="text-xl font-black text-blue-900">📚 全局题库检视</h2>
-                                <p className="text-xs text-gray-500">这里列出了所有已加载的题目，你可以检查扩充是否成功。</p>
-                            </div>
-                            <button onClick={()=>setShow(false)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold transition-colors">关闭</button>
-                        </div>
-                        
-                        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-                            {Object.keys(STATIC_DB).map(mid => (
-                                <div key={mid} className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                    <div className="bg-blue-50 p-3 border-b border-blue-100 flex justify-between">
-                                        <h3 className="font-bold text-blue-800 text-lg">{mid} 单元</h3>
-                                        <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-lg">
-                                            共 {(STATIC_DB[mid].BASIC?.length||0) + (STATIC_DB[mid].APP?.length||0)} 题
-                                        </span>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-                                        <div className="p-4">
-                                            <h4 className="font-black text-indigo-500 mb-3 flex items-center gap-2">
-                                                <span>🔹 基础训练</span>
-                                                <span className="bg-gray-100 text-gray-500 text-xs px-2 rounded-full">{STATIC_DB[mid].BASIC?.length||0}</span>
-                                            </h4>
-                                            <ul className="space-y-2 text-sm">
-                                                {STATIC_DB[mid].BASIC?.map((q,i) => (
-                                                    <li key={i} className="group hover:bg-gray-50 p-2 rounded transition-colors border-l-4 border-transparent hover:border-indigo-300">
-                                                        <div className="text-gray-700 font-medium">{q.t}</div>
-                                                        <div className="text-xs text-green-600 mt-1">答案: {q.a}</div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        <div className="p-4">
-                                            <h4 className="font-black text-pink-500 mb-3 flex items-center gap-2">
-                                                <span>🔸 应用挑战</span>
-                                                <span className="bg-gray-100 text-gray-500 text-xs px-2 rounded-full">{STATIC_DB[mid].APP?.length||0}</span>
-                                            </h4>
-                                            <ul className="space-y-2 text-sm">
-                                                {STATIC_DB[mid].APP?.map((q,i) => (
-                                                    <li key={i} className="group hover:bg-gray-50 p-2 rounded transition-colors border-l-4 border-transparent hover:border-pink-300">
-                                                        <div className="text-gray-700 font-medium">{q.t}</div>
-                                                        <div className="mt-1 flex gap-2">
-                                                            <span className="text-xs bg-green-100 text-green-700 px-1.5 rounded">答: {q.a}</span>
-                                                            {q.e && <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 rounded">析: {q.e}</span>}
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            };
-
-            // 4. 将检视器挂载到页面上
-            const viewerDiv = document.createElement('div');
-            document.body.appendChild(viewerDiv);
-            const viewerRoot = ReactDOM.createRoot(viewerDiv);
-            viewerRoot.render(<QuestionViewer />);
-        })();
-        /* --- 智能模块结束 --- */
+                const key = mid + '_' + mode;
+                if (!this._bags[key] || this._bags[key].length === 0) {
+                    const staticList = STATIC_DB[mid]?.[mode] || [];
+                    let indices = staticList.map((_, i) => i);
+                    const dynCount = Math.max(2, Math.floor(indices.length * 0.4));
+                    for(let i=0; i<dynCount; i++) indices.push(-1);
+                    for (let i = indices.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [indices[i], indices[j]] = [indices[j], indices[i]];
+                    }
+                    this._bags[key] = indices;
+                }
+                const index = this._bags[key].pop();
+                let q;
+                if (index === -1) {
+                    const genFunc = this[mid] || this.M2;
+                    q = genFunc(this);
+                    if (mode === 'APP') q.type = 'INPUT';
+                } else {
+                    q = STATIC_DB[mid][mode][index];
+                }
+                return q;
+            }
+        };
+        Object.assign(Generator, SmartMixin);
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
 </body>
 </html>
-
